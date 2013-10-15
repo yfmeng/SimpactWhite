@@ -58,7 +58,9 @@ end
         P.loglogP =  log(-log(1-P.probability/100));
         % random weibull
         P.alpha = P.sexActsPerYear*ones(SDS.number_of_males,SDS.number_of_females);%.*(-log(rand(SDS.number_of_males,SDS.number_of_females))).^(1/4);
-        P.alpha = log(P.alpha);
+        P.alpha = log(P.alpha)...
+            +log(repmat(SDS.males.behaviour_factor',1,SDS.number_of_females))...
+            +log(repmat(SDS.females.behaviour_factor,SDS.number_of_males,1));
         P.beta = event.sexual_behaviour_parameters{2,end};
         P.t = nan(4, infections, SDS.float);
         

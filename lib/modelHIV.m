@@ -205,8 +205,8 @@ end
         SDS.males.AIDSdeath = malesNaN; %since infection
         SDS.females.AIDSdeath = femalesNaN;
         SDS.person_years_aquired = 0;
-        SDS.males.behaviour_factor = malesNaN;
-        SDS.females.behaviour_factor = femalesFalse;
+        SDS.males.behaviour_factor = rand(1, SDS.number_of_males);
+        SDS.females.behaviour_factor = rand(1, SDS.number_of_females);
         
         SDS.females.sex_worker = femalesFalse;
         
