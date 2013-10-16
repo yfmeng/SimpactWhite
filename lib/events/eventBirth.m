@@ -20,7 +20,6 @@ end
 [varargout{1:nargout}] = eval(cmd);
 
         % ******* Function Handles *******
-        empiricalExposure = spTools('handle', 'empiricalExposure');
         empiricalCommunity = spTools('handle', 'empiricalCommunity');
         empiricalCRF = spTools('handle', 'empiricalCRF');  
 
@@ -35,7 +34,7 @@ end
         
         
         % ******* Function Handles *******
-        empiricalExposure = spTools('handle', 'empiricalExposure');
+        
         empiricalCommunity = spTools('handle', 'empiricalCommunity');
         empiricalCRF = spTools('handle', 'empiricalCRF');        
         P.rand0toInf = spTools('handle', 'rand0toInf');
@@ -89,7 +88,7 @@ end
         
 	P = X;
 	P.enable = SDS.birth.enable;
-        empiricalExposure = spTools('handle', 'empiricalExposure');
+        
         empiricalCommunity = spTools('handle', 'empiricalCommunity');
         empiricalCRF = spTools('handle', 'empiricalCRF');        
         P.rand0toInf = spTools('handle', 'rand0toInf');
@@ -182,16 +181,7 @@ end
         SDS.(sex).born(ID) = P0.now;
         
         %SDS.(sex).community(ID) = empiricalCommunity(1, SDS.number_of_communities);
-        SDS.(sex).community(ID) = SDS.females.community(P0.female);
-        
-        llimit = [0.999, 0.999];
-        ulimit = [1, 1];
-        peak = [1, 1];  % community 1 low exposure, community 2 high exposure;
-             
-        SDS.(sex).BCC_exposure(ID) = 1;
-        
-        %    empiricalExposure(1, llimit, ulimit, peak, SDS.(sex).community(ID));
-       
+        SDS.(sex).community(ID) = SDS.females.community(P0.female);       
         
         SDS.(sex).current_relations_factor(ID) = SDS.formation.current_relations_factor;
             %empiricalCRF(1, betaPars, SDS.(sex).community(ID), SDS);  
@@ -202,7 +192,6 @@ end
                 P0.aliveMales(ID) = true;
                 %P0.malecommID = repmat(SDS.males.commID(:), 1, SDS.number_of_females);
                 P0.maleCommunity(ID, :) = SDS.males.community(ID);
-                P0.maleBCCexposure = repmat(SDS.males.BCC_exposure(:), 1, SDS.number_of_females);
                 P0.malecurrent_relations_factor = repmat(SDS.males.current_relations_factor(:), 1, SDS.number_of_females);
                 
                 Pmort.index = ID;
@@ -216,7 +205,6 @@ end
                 P0.aliveFemales(ID) = true;
                 %P0.femalecommID = repmat(SDS.females.commID(:)', SDS.number_of_males, 1);
                 P0.femaleCommunity(:, ID) = SDS.females.community(ID);
-                P0.femaleBCCexposure = repmat(SDS.females.BCC_exposure(:)', SDS.number_of_males, 1);
                 P0.femalecurrent_relations_factor = repmat(SDS.females.current_relations_factor(:)', SDS.number_of_males, 1);
                 Pmort.index = SDS.number_of_males + ID;
         end

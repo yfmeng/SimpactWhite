@@ -106,10 +106,6 @@ end
             P0.ageDifference = P0.maleAge - P0.femaleAge;
             P0.communityDifference = cast(P0.maleCommunity - P0.femaleCommunity, SDS.float);
         
-            P0.BCCexposureMax = max(P0.maleBCCexposure, P0.femaleBCCexposure);
-            P0.BCCexposureMin = min(P0.maleBCCexposure, P0.femaleBCCexposure);
-            P0.BCCexposureMean = (P0.maleBCCexposure + P0.femaleBCCexposure)/2;
-        
             P0.current_relations_factorMax = max(P0.malecurrent_relations_factor, P0.femalecurrent_relations_factor);
             P0.current_relations_factorMin = min(P0.malecurrent_relations_factor, P0.femalecurrent_relations_factor);
             P0.current_relations_factorMean = (P0.malecurrent_relations_factor + P0.femalecurrent_relations_factor)/2;

@@ -193,7 +193,7 @@ end
             P.community_difference_factor*abs(P0.communityDifference(P0.subset));
         P.beta(P0.subset) = P.beta(P0.subset) + ...
             P.behavioural_change_factor.*P0.relationCount(P0.subset);
-        %.*P0.BCCexposureMean(P0.subset)/P.campaign_roll_out_duration;
+        
         
         if P.fix_PTR
         active = isfinite(P.alpha);
@@ -332,19 +332,6 @@ props.age_difference_factor = -log(5)/5;
 props.preferred_age_difference = 4.5;
 props.community_difference_factor = 0;
 props.transaction_sex_factor = log(3);
-props.communities = {
-    'lower exposure limit', 'upper exposure limit', 'exposure peak'
-    0   .2  0
-    .8  1   1
-    };
-props.BCC_exposure_function = JComponent('javax.swing.JComboBox', {
-    'min'
-    'max'
-    'mean'}, 3);
-props.partnering_function = JComponent('javax.swing.JComboBox', {
-    'min'
-    'max'
-    'mean'}, 1);
 props.fix_turn_over_rate = false;
 props.turn_over_rate = 0.6;
 props.campaign_roll_out_duration = 2;
