@@ -8,10 +8,10 @@ addpath(genpath('/Simpact'))
 
 % (2)
 %set parameters of the population
-SDS.initial_number_of_females = 10;
-SDS.initial_number_of_males = 10;
-SDS.number_of_males = 20; 
-SDS.number_of_females = 20;
+SDS.initial_number_of_females = 50;
+SDS.initial_number_of_males = 50;
+SDS.number_of_males = 60; 
+SDS.number_of_females = 60;
 
 SDS.number_of_relations = SDS.number_of_males*SDS.number_of_females;
 % etc...

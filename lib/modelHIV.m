@@ -91,6 +91,13 @@ end
         SDS.females.partnering = femalesOnes;
         SDS.males.current_relations_factor = malesNaN;
         SDS.females.current_relations_factor = femalesNaN;
+        SDS.males.MSM = malesFalse;
+        
+        MSM = round(SDS.percentage_of_MSM*SDS.number_of_males/100);
+        SDS.males.MSM(randi(SDS.number_of_males,1,MSM)) = true;
+        MSM = sum(SDS.males.MSM);
+        falseMatrixMSM = false(MSM,MSM);
+        P0.subsetMSM = falseMatrixMSM;
         
         maleRange = 1:SDS.initial_number_of_males;
         femaleRange = 1:SDS.initial_number_of_females;
@@ -111,19 +118,23 @@ end
         
         partMales = repmat(SDS.males.partnering, SDS.number_of_females,1);
         partFemales = repmat(SDS.females.partnering',1, SDS.number_of_males);
-        
+        partMSM = repmat(SDS.males.partnering(SDS.males.MSM),sum(SDS.males.MSM),1);
         % temp
         partneringFcn = 'mean';
         
         switch partneringFcn
             case 'min'
                 P0.partnering = min(partMales, partFemales);
+                P0.partneringMSM = min(partMSM,partMSM');
             case 'max'
                 P0.partnering = max(partMales, partFemales);
+                P0.partneringMSM = max(partMSM,partMSM');
             case 'mean'
                 P0.partnering = (partMales + partFemales)/2;
+                P0.partneringMSM = (partMSM+partMSM')/2;
             case 'product'
                 P0.partnering = partMales.*partFemales;
+                P0.partneringMSM = partMSM.*partMSM';
         end
         
         
@@ -199,6 +210,15 @@ end
             zeros(SDS.number_of_relations, 1, SDS.float)
             ];
         
+        SDS.relationsMSM.ID = zeros(MSM*MSM, 2, SDS.integer);
+        SDS.relationsMSM.type = zeros(MSM*MSM, 2, SDS.integer);
+        SDS.relationsMSM.condom_use = zeros(MSM*MSM,1);
+        SDS.relationsMSM.proximity = zeros(MSM*MSM,1,SDS.integer);
+        SDS.relationsMSM.time = [
+            nan(MSM*MSM, 1, SDS.float), ...
+            nan(MSM*MSM, 1, SDS.float), ...
+            zeros(MSM*MSM, 1, SDS.float)
+            ];
         
         % ******* Common Parameters for Population of Singles *******
         P0.maleRelationCount = zeros(SDS.number_of_males, 1, SDS.float);
@@ -211,6 +231,12 @@ end
         P0.relationCountDifference = abs(...
             repmat(P0.maleRelationCount, 1, SDS.number_of_females) - ...
             repmat(P0.femaleRelationCount, SDS.number_of_males, 1));
+        P0.relationCountMSM = zeros(1, MSM, SDS.float);
+        P0.relationCountMSM = repmat(P0.relationCountMSM,MSM,1)...
+            + repmat(P0.relationCountMSM',1,MSM);
+        P0.relationCountDifferenceMSM = abs(P0.relationCountMSM...
+            -P0.relationCountMSM');
+        
         
         P0.fsw = SDS.females.sex_worker;
         P0.transactionSex = repmat(P0.fsw, SDS.number_of_males, 1);
@@ -222,10 +248,16 @@ end
         P0.femaleAge(P0.femaleAge<15) = NaN;
         P0.meanAge = (P0.maleAge + P0.femaleAge)/2;
         
+        ageMSM = -repmat(SDS.males.born(SDS.males.MSM),MSM,1);
+        P0.meanAgeMSM = (ageMSM+ageMSM')/2;
+        P0.ageDifferenceMSM = abs(ageMSM-ageMSM');
+        
         %%%%%%%%
         P0.maleCommunity = repmat(SDS.males.community(:), 1, SDS.number_of_females);
         P0.femaleCommunity = repmat(SDS.females.community(:)', SDS.number_of_males, 1);
-            
+        communityMSM = repmat(SDS.males.community(SDS.males.MSM),MSM,1);
+        P0.communityDifferenceMSM = cast(communityMSM-communityMSM',SDS.float);
+        
         P0.malecurrent_relations_factor = repmat(SDS.males.current_relations_factor(:), 1, SDS.number_of_females);%
         P0.femalecurrent_relations_factor = repmat(SDS.females.current_relations_factor(:)', SDS.number_of_males, 1);%
         
@@ -241,6 +273,7 @@ end
         P0.current_relations_factorMean = (P0.malecurrent_relations_factor+P0.femalecurrent_relations_factor)./2;%
         
         P0.current = falseMatrix;
+        P0.currentMSM = falseMatrixMSM;
         
         maleHIVpos = falseMatrix;
         maleHIVpos(~isnan(SDS.males.HIV_positive), :) = true;
@@ -259,7 +292,7 @@ end
         P0.thisPregnantTime = nan(1, SDS.number_of_females);
         P0.breastfeedingStop = nan(1, SDS.number_of_females);
         P0.thisChild = nan(1, SDS.number_of_females);
-        
+        P0.MSM = SDS.males.MSM;
         % ******* Event Functions *******
         P0.numberOfEvents = 0;
         P0.elements = [];
@@ -376,6 +409,7 @@ end
         P0.maleAge = P0.maleAge + P0.eventTime;
         P0.femaleAge = P0.femaleAge + P0.eventTime;
         P0.meanAge = P0.meanAge + P0.eventTime;
+        P0.meanAgeMSM = P0.meanAgeMSM + P0.eventTime;
         
         P0.timeSinceLast = P0.timeSinceLast + P0.eventTime;
         
@@ -453,6 +487,7 @@ SDS.number_of_males = 5;
 SDS.number_of_females = 5;
 SDS.initial_number_of_males = 5;
 SDS.initial_number_of_females = 5;
+SDS.percentage_of_MSM = 50;
 SDS.number_of_community_members = floor(SDS.initial_number_of_males/2); % 4 communities
 SDS.number_of_relations = SDS.number_of_males*SDS.number_of_females;
 SDS.number_of_tests =  (SDS.number_of_males+SDS.number_of_females);
@@ -510,7 +545,7 @@ SDS.females = mergeStruct(commonPrp, struct(...
 
 % ******* Relations *******
 SDS.relations = struct('ID', [], 'time', []);
-
+SDS.relationsMSM = struct('ID',[],'time',[]);
 
 % ******* Fetch Available Events *******
 folder = [fileparts(which(mfilename)) '/events'];
