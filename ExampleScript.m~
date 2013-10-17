@@ -41,6 +41,7 @@ SDS.debut.enable=1;
 % SDS.HIV_transmission.enable=0;
 % (3)
 % actually run the model
+SDS.HIV_transmission_MSM.enable = 1;
 [SDS, ~] = spRun('start',SDS); 
 
 % % (4)

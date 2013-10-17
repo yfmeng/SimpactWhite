@@ -44,7 +44,7 @@ end
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
         end
-        [P.enableTransmissionMSM, thisMsg] = spTools('handle', 'eventTransmission', 'enable');
+        [P.enableTransmissionMSM, thisMsg] = spTools('handle', 'eventTransmissionMSM', 'enable');
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
         end
@@ -141,9 +141,8 @@ end
         SDS.relationsMSM.time(P.relation, P.indexStartStop) = [P0.now, Inf];
         SDS.relationsMSM.proximity(P.relation) = abs(SDS.males.community(MSM_idx_1)-SDS.males.community(MSM_idx_2));
         
-        P.enableDissolutionMSM(P0)  % use P0.index       
-%         P.enableTransmissionMSM(SDS,P0);
-%         
+        P.enableDissolutionMSM(P0)  % use P0.index   
+    
         % ******* Prepare Next *******
         P.eventTimes(P0.index) = Inf;   % block formation
         P.rand(P0.index) = Inf;
@@ -159,13 +158,19 @@ end
         P0.index = MSM_idx_2;
         P.updateTest(SDS, P0)
         
+        if SDS.males.HIV_positive(MSM_idx_2)
+            temp = P0.MSM_1;
+            P0.MSM_1 = P0.MSM_2;
+            P0.MSM_2 = temp;
+        end
+        P.enableTransmissionMSM(SDS,P0);
 %         P0.timeSinceLastMSM(P0.MSM_1,:) = 0;
 %         P0.timeSinceLastMSM(:,P0.MSM_2) = 0;
     end
 
 
 %% enable
-    function P0 = eventFormationMSM_enable(SDS, P0)
+    function P0 = eventFormationMSM_enable(P0)
         % Invoked by eventDissolutionMSM_fire, eventDebut_fire
         % use P0.subsetMSM
         if ~P.enable
@@ -219,19 +224,16 @@ end
             P0.maleRelationCount([MSM_idx_1,MSM_idx_2]) = P0.maleRelationCount([MSM_idx_1,MSM_idx_2]) + 1;
             P0.relationCount([MSM_idx_1,MSM_idx_2],:) = P0.relationCount([MSM_idx_1,MSM_idx_2],:) + 1;
             P0.relationCountMSM(P0.MSM_1,P0.MSM_2) = P0.relationCountMSM(P0.MSM_1,P0.MSM_2) + 1;
-            P0.relationCountDifference = abs(...
-            repmat(P0.maleRelationCount, 1, SDS.number_of_females) - ...
-            repmat(P0.femaleRelationCount, SDS.number_of_males, 1));
-            P0.relationCountDifferenceMSM  
         end
         if type ==0
             % dissolution
             P0.maleRelationCount([MSM_idx_1,MSM_idx_2]) = P0.maleRelationCount([MSM_idx_1,MSM_idx_2]) - 1;
             P0.relationCount([MSM_idx_1,MSM_idx_2],:) = P0.relationCount([MSM_idx_1,MSM_idx_2],:) - 1;
             P0.relationCountMSM(P0.MSM_1,P0.MSM_2) = P0.relationCountMSM(P0.MSM_1,P0.MSM_2) - 1;
-            
         end
-            
+            P0.relationCountDifference = abs(...
+            repmat(P0.maleRelationCount, 1, SDS.number_of_females) - ...
+            repmat(P0.femaleRelationCount, SDS.number_of_males, 1));
             P0.relationCountDifferenceMSM = abs(P0.relationCountMSM-P0.relationCountMSM');
          P.alpha(P0.subsetMSM) = P.baseline_factor*P0.partneringMSM(P0.subsetMSM) + ...
             P.current_relations_factor.*P0.relationCountMSM(P0.subsetMSM) + ...

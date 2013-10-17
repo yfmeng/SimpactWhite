@@ -280,6 +280,7 @@ end
         femaleHIVpos = falseMatrix;
         femaleHIVpos(:, ~isnan(SDS.females.HIV_positive)) = true;
         P0.serodiscordant = xor(maleHIVpos, femaleHIVpos);
+        P0.serodiscordantMSM = falseMatrixMSM;
         P0.HIVpos = [
             SDS.males.HIV_positive, SDS.females.HIV_positive
             ]';
@@ -331,7 +332,7 @@ end
                     return
                 end
                 P0.numberOfEvents = P0.numberOfEvents + 1;
-                if strcmp(subS.event_file,'eventFormation')
+                if strcmp(subS.event_file,'eventFormation')|strcmp(subS.event_file,'eventFormationMSM')|strcmp(subS.event_file,'eventTransmissionMSM')
                     [elements, initMsg, P0] = feval(subS.event_file, 'init', SDS, subS,P0);
                 else
                     [elements, initMsg] = feval(subS.event_file, 'init', SDS, subS);

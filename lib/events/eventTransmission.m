@@ -157,7 +157,7 @@ end
             % female infecting male
             P0.serodiscordant(P0.male, :) = ~P0.serodiscordant(P0.male, :);
             P0.subset(P0.male, :) = true;
-            SDS.males.HIV_source(P0.male) = P0.female;
+            SDS.males.HIV_source(P0.male) = P0.female+SDS.number_of_males;
             SDS.males.HIV_positive(P0.male) = P0.now;
             P0.index = P0.male;
             P.eventTimes(P0.male, ~P0.serodiscordant(P0.male,:)) = Inf;
@@ -368,7 +368,7 @@ end
             P0.male = rem(P0.index - 1, SDS.number_of_males) + 1;
             P0.female = ceil(P0.index/SDS.number_of_males);
              timeHIVpos = SDS.males.HIV_positive(P0.male);
-        idx = P0.male;
+            idx = P0.male;
         if isnan(timeHIVpos)
             % female is HIV+
             timeHIVpos = SDS.females.HIV_positive(P0.female);

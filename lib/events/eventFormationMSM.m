@@ -44,7 +44,7 @@ end
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
         end
-        [P.enableTransmissionMSM, thisMsg] = spTools('handle', 'eventTransmission', 'enable');
+        [P.enableTransmissionMSM, thisMsg] = spTools('handle', 'eventTransmissionMSM', 'enable');
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
         end
@@ -141,9 +141,8 @@ end
         SDS.relationsMSM.time(P.relation, P.indexStartStop) = [P0.now, Inf];
         SDS.relationsMSM.proximity(P.relation) = abs(SDS.males.community(MSM_idx_1)-SDS.males.community(MSM_idx_2));
         
-        P.enableDissolutionMSM(P0)  % use P0.index       
-%         P.enableTransmissionMSM(SDS,P0);
-%         
+        P.enableDissolutionMSM(P0)  % use P0.index   
+    
         % ******* Prepare Next *******
         P.eventTimes(P0.index) = Inf;   % block formation
         P.rand(P0.index) = Inf;
@@ -159,13 +158,21 @@ end
         P0.index = MSM_idx_2;
         P.updateTest(SDS, P0)
         
+        if ~isnan(SDS.males.HIV_positive(MSM_idx_2))
+            temp = P0.MSM_1;
+            P0.MSM_1 = P0.MSM_2;
+            P0.MSM_2 = temp;
+        end
+        if P0.serodiscordantMSM(P0.MSM_1,P0.MSM_2)
+        P.enableTransmissionMSM(SDS,P0);
+        end
 %         P0.timeSinceLastMSM(P0.MSM_1,:) = 0;
 %         P0.timeSinceLastMSM(:,P0.MSM_2) = 0;
     end
 
 
 %% enable
-    function P0 = eventFormationMSM_enable(SDS, P0)
+    function P0 = eventFormationMSM_enable(P0)
         % Invoked by eventDissolutionMSM_fire, eventDebut_fire
         % use P0.subsetMSM
         if ~P.enable
@@ -198,7 +205,7 @@ end
 %% update (FROM FEI 07/10/2012)
     function P0 = eventFormationMSM_update(SDS, P0, type)
         % updated by formation, dissolution
-        % use P0.male, P0.female
+        % use P0.MSM_1/2
         P0.subsetMSM(P0.MSM_1,P0.MSM_2) = true;
         P0.subsetMSM = P0.subsetMSM&~P0.currentMSM&isfinite(P.eventTimes);
         P0.subset(~P0.adultMales(SDS.males.MSM),~P0.adultMales(SDS.males.MSM)) = false;

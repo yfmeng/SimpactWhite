@@ -41,7 +41,7 @@ end
             msg = sprintf('%s%s\n', msg, thisMsg);
         end
        
-        [P.blockTransmissionMSM, thisMsg] = spTools('handle', 'eventTransmission', 'block');
+        [P.blockTransmissionMSM, thisMsg] = spTools('handle', 'eventTransmissionMSM', 'block');
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
         end
@@ -84,11 +84,12 @@ end
         P.intExpLinear = spTools('handle', 'intExpLinear');
         [P.updateFormationMSM, thisMsg] = spTools('handle', 'eventFormationMSM', 'update');
         [P.enableFormationMSM, thisMsg] = spTools('handle', 'eventFormationMSM', 'enable');
+        
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
         end
        
-        [P.blockTransmissionMSM, thisMsg] = spTools('handle', 'eventTransmission', 'block');
+        [P.blockTransmissionMSM, thisMsg] = spTools('handle', 'eventTransmissionMSM', 'block');
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
         end
@@ -120,13 +121,13 @@ end
         P0.MSM_2 = ceil(P0.index/P.number_of_MSM);
         
         % ******* Dissolution of Relation *******
-        [SDS, P0] = eventDissolutionMSM_dump(SDS, P0); % uses P0.male; P0.female
+        [SDS, P0] = eventDissolutionMSM_dump(SDS, P0);
         
         % ******* Prepare Next *******
-       % P.blockTransmissionMSM(SDS, P0)
+        P.blockTransmissionMSM(SDS, P0)
         P0.subsetMSM(P0.MSM_1, P0.MSM_2) = true;
         P0.currentMSM(P0.MSM_1, P0.MSM_2) = false;
-        P0 = P.enableFormationMSM(SDS,P0);
+        P0 = P.enableFormationMSM(P0);% uses P0.index
         
         % ******* Influence on All Events: Cross *******
         P0.subsetMSM(P0.MSM_1, :) = true;
@@ -150,8 +151,7 @@ end
         subset = P0.index;
         P.rand(P0.index) = P.rand0toInf(1, 1);
         
-        
-%         % ******* Integrated Hazard *******
+        % ******* Integrated Hazard *******
         P.alpha(subset) = P.baseline_factor*P0.partneringMSM(subset)+ ...
             P.current_relations_factor*P0.relationCountMSM(subset) + ...
             P.mean_age_factor*(P0.meanAgeMSM(subset) - P.age_limit) + ...
@@ -165,7 +165,7 @@ end
 %% update
     function P0 = eventDissolutionMSM_update(P0)
         % called by formation, dissolution
-        % use P0.male/P0.female
+        % use P0.MSM_1/2
         P0.subsetMSM(P0.MSM_1,:) = true;
         P0.subsetMSM(:,P0.MSM_2) = true;
         P0.subsetMSM = P0.subsetMSM&~P0.currentMSM&isfinite(P.eventTimes);
@@ -245,7 +245,7 @@ function [props, msg] = eventDissolutionMSM_properties
 
 msg = '';
 
-props.baseline_factor = log(0.5);
+props.baseline_factor = log(0.1);
 props.community_difference_factor = -1;
 props.current_relations_factor = log(2); %log(4);
 props.individual_behavioural_factor = 0;
