@@ -182,7 +182,7 @@ end
         P0.subsetMSM = P0.subsetMSM&~P0.currentMSM&~isfinite(P.eventTimes);
         P0.subsetMSM(~P0.adultMales(P0.MSM),:) = false;
         P0.subsetMSM(:,~P0.adultMales(P0.MSM)) = false;
-        P0.subsetMSM(logical(eye(size(P0.subsetMSM))))=false;
+        P0.subsetMSM=triu(P0.subsetMSM,1);
         P.rand(P0.subsetMSM) = P.rand0toInf(1,sum(sum(P0.subsetMSM)));
         P.alpha(P0.subsetMSM) = P.baseline_factor*P0.partneringMSM(P0.subsetMSM) + ...
             P.current_relations_factor.*P0.relationCountMSM(P0.subsetMSM) + ...
@@ -210,6 +210,7 @@ end
         P0.subsetMSM = P0.subsetMSM&~P0.currentMSM&isfinite(P.eventTimes);
         P0.subset(~P0.adultMales(SDS.males.MSM),~P0.adultMales(SDS.males.MSM)) = false;
         P0.subsetMSM(logical(eye(size(P0.subsetMSM))))=false;
+        P0.subsetMSM=triu(P0.subsetMSM,1);
         Pc = P.intExpLinear(P.alpha(P0.subsetMSM),P.beta(P0.subsetMSM),...
             0,min(P0.timeSinceLast(P0.subsetMSM),P0.now-P.time0(P0.subsetMSM)));
         

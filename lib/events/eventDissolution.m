@@ -263,9 +263,9 @@ function [props, msg] = eventDissolution_properties
 
 msg = '';
 
-props.baseline_factor = log(0.5);
+props.baseline_factor = log(0.1);
 props.community_difference_factor = -1;
-props.current_relations_factor = log(2); %log(4);
+props.current_relations_factor = log(1.02); %log(4);
 props.individual_behavioural_factor = 0;
 props.mean_age_factor = 0;% log(0.8); %-log(hazard ration)/(age2-age1);
 props.last_change_factor = log(1.3);

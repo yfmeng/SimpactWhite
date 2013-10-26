@@ -132,7 +132,7 @@ end
         % ******* Influence on All Events: Cross *******
         P0.subsetMSM(P0.MSM_1, :) = true;
         P0.subsetMSM(:, P0.MSM_2) = true;
-        P0.subsetMSM(logical(eye(size(P0.subsetMSM))))=false;
+        P0.subsetMSM=triu(P0.subsetMSM,1);
         P0 = P.updateFormationMSM(SDS, P0, 0);
         P0 = eventDissolutionMSM_update(P0);
 %         P0.timeSinceLastMSM(P0.MSM_1,:) = 0;
@@ -171,7 +171,7 @@ end
         P0.subsetMSM = P0.subsetMSM&~P0.currentMSM&isfinite(P.eventTimes);
         P0.subsetMSM(~P0.adultMales(P0.MSM), :) = false;
         P0.subsetMSM(:,~P0.adultMales(P0.MSM)) = false;
-        P0.subsetMSM(logical(eye(size(P0.subsetMSM))))=false;
+        P0.subsetMSM=triu(P0.subsetMSM,1);
         Pc = P.intExpLinear(P.alpha(P0.subsetMSM),P.beta(P0.subsetMSM),...
             0,min(P0.timeSinceLast(P0.subsetMSM),P0.now-P.time0(P0.subsetMSM)));
 	    P.rand(P0.subsetMSM) = P.rand(P0.subsetMSM)-Pc;
@@ -245,7 +245,7 @@ function [props, msg] = eventDissolutionMSM_properties
 
 msg = '';
 
-props.baseline_factor = log(0.1);
+props.baseline_factor = log(0.5);
 props.community_difference_factor = -1;
 props.current_relations_factor = log(2); %log(4);
 props.individual_behavioural_factor = 0;

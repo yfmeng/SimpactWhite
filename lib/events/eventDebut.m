@@ -105,6 +105,7 @@ end
                   P0.ageDifferenceMSM = abs(ageMSM-ageMSM');
                   P0.subsetMSM(MSM_idx,:) = true;
                   P0.subsetMSM(:,MSM_idx) = true;
+                  P0.subsetMSM=triu(P0.subsetMSM,1);
                   P0 = P.enableFormationMSM(P0);
                   P0.subsetMSM(P0.subsetMSM) = false;%            
                 end

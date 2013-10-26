@@ -5,9 +5,11 @@ if strcmp(gender(1),'m')||strcmp(gender,'M')
 else
     col = 2;
 end
+
 if ~strcmp(filename(1),'n')
 tbl = csvread(filename,1,0);
 else
+    
 tbl = [ 1.0000    2.2000    2.0000
     2.0000    2.1000    2.0000
     3.0000    2.1000    2.0000

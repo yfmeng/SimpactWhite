@@ -167,7 +167,7 @@ end
             P0.serodiscordantMSM(P0.MSM_1, P0.MSM_2)=false;
             P0.serodiscordantMSM(P0.MSM_2, P0.MSM_1)=false;
         end
-        
+        P0.serodiscordant(MSM_idx_2, :) = ~P0.serodiscordant(MSM_idx_2, :);
         P0.subsetMSM = P.false;
         % ******* Infection *******
         
@@ -286,10 +286,6 @@ end
         relationID_1 = intersect(find(SDS.relationsMSM.ID(:,1)==MSM_idx_1),find(SDS.relationsMSM.ID(:,2)==MSM_idx_2));
         relationID_2 = intersect(find(SDS.relationsMSM.ID(:,2)==MSM_idx_1),find(SDS.relationsMSM.ID(:,1)==MSM_idx_2));
         relationID = union(relationID_1,relationID_2);
-        
-        if isempty(relationID)
-            P;
-        end
         
         relationID = relationID(end);
         Tformation = SDS.relationsMSM.time(relationID,1);
