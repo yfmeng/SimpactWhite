@@ -5,6 +5,8 @@ lhs(:,3) = lhs(:,3)*5; % Weibull shape
 
 n = 300;
 
+file = '/Users/feimeng/SimpactWhite/ageMixing/lhs2140.csv';
+csvwrite(file,lhs)
 %
 for run = 21:40
 agedif=lhs(run-20,1);
@@ -18,5 +20,3 @@ toc
 end
 
 % 
-file = '/Users/feimeng/SimpactWhite/ageMixing/lhs2140.csv';
-csvwrite(file,lhs)

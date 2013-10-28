@@ -195,7 +195,7 @@ end
             P.behavioural_change_factor.*P0.relationCount(P0.subset);
         
         
-        if P.fix_PTR
+        if P.fix_PTR&&P0.now>=P.warm_up_period
         active = isfinite(P.alpha);
         A = exp(P.alpha(active));
         CFH = sum(sum(A));  % cumulative formation hazard
@@ -268,7 +268,7 @@ end
         P.beta(P0.subset) = P.beta(P0.subset) + ...
             P.behavioural_change_factor.*P0.relationCount(P0.subset);
         
-        if P.fix_PTR
+        if P.fix_PTR&&P0.now>=P.warm_up_period
            active = isfinite(P.alpha);
         A = exp(P.alpha(active));
     CFH = sum(sum(A));  % cumulative formation hazard
@@ -333,6 +333,7 @@ props.preferred_age_difference = 4.5;
 props.community_difference_factor = log(1.3);
 props.transaction_sex_factor = log(3);
 props.fix_turn_over_rate = false;
+props.warm_up_period = 1;
 props.turn_over_rate = 0.6;
 props.campaign_roll_out_duration = 2;
 props.time_vector_resolution = .5;
