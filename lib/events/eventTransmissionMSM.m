@@ -42,7 +42,8 @@ end
         P.number_of_MSM = number_of_MSM;
         
         P.rand = spTools('rand0toInf', P.number_of_MSM, P.number_of_MSM);
-        
+        P.consumedRand = spTools('handle','consumedRand');
+        P.transmissionTime = spTools('handle','transmissionTime');
         P.sexActsPerYear =event.sexual_behaviour_parameters{2,1}*52;%*(unprotected+(1-unprotected)*(1-condomEffect));
         P.ARVeffect = 1- event.infectiousness_decreased_by_ARV;
         P.probabilityChange = ones(P.number_of_MSM, P.number_of_MSM);
@@ -118,7 +119,8 @@ end
         [P.fireTest, msg] = spTools('handle', 'eventTest', 'fire');
         
         % ******* Variables & Constants *******
-        P.rand = spTools('rand0toInf', SDS.number_of_males, SDS.number_of_females);
+        P.consumedRand = spTools('handle','consumedRand');
+        P.transmissionTime = spTools('handle','transmissionTime');
         
     end
 
@@ -291,7 +293,7 @@ end
         Tformation = SDS.relationsMSM.time(relationID,1);
         
         P.eventTimes(P0.MSM_1,P0.MSM_2) = ...
-            transmissionTime(P.rand(P0.MSM_1,P0.MSM_2), P0.now, Tformation, T, a, P.beta);
+            P.transmissionTime(P.rand(P0.MSM_1,P0.MSM_2), P0.now, Tformation, T, a, P.beta);
         %P.lastChangeMSM(P0.MSM_1,P0.MSM_2) = P0.now;
         
         
@@ -463,7 +465,7 @@ end
         Tformation = SDS.relations.time(relationID,1);
         alpha = P.alpha(P0.MSM_1,P0.MSM_2) + loglogP;
         P.rand(P0.MSM_1,P0.MSM_2) = P.rand(P0.MSM_1,P0.MSM_2) ...
-            - consumedRand(P0.now, Tformation, T, P.lastChange(P0.MSM_1,P0.MSM_2), alpha, P.beta);
+            - P.consumedRand(P0.now, Tformation, T, P.lastChange(P0.MSM_1,P0.MSM_2), alpha, P.beta);
         P.eventTimes(P0.MSM_1,P0.MSM_2) = Inf;
     end
 end

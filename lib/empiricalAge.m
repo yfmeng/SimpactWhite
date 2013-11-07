@@ -1,4 +1,4 @@
-function ages = MonteCarloAgeSA(n,gender,filename)
+function ages = empiricalAge(n,gender,filename)
 %%
 if strcmp(gender(1),'m')||strcmp(gender,'M')
     col = 1;

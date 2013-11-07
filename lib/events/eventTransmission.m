@@ -44,7 +44,9 @@ end
         P.ARVeffect = 1- event.infectiousness_decreased_by_ARV;
         P.probabilityChange = ones(SDS.number_of_males, SDS.number_of_females);
         P.eventTimes = inf(SDS.number_of_males, SDS.number_of_females, SDS.float);
-        
+        P.CD4Interp = spTools('handle','CD4Interp');
+        P.consumedRand = spTools('handle','consumedRand');
+        P.transmissionTime = spTools('handle','transmissionTime');
         varWeibull = event.AIDS_mortality_distribution{2, 1};
         P.shape = event.AIDS_mortality_distribution{2, 2};
         P.scale = event.AIDS_mortality_distribution{2, 3};
@@ -119,7 +121,9 @@ end
         
         % ******* Variables & Constants *******
         P.rand = spTools('rand0toInf', SDS.number_of_males, SDS.number_of_females);
-        
+        P.CD4Interp = spTools('handle','CD4Interp');
+        P.consumedRand = spTools('handle','consumedRand');
+        P.transmissionTime = spTools('handle','transmissionTime');
     end
 
 %% eventTimes
@@ -165,7 +169,7 @@ end
             SDS.males.CD4Infection(P0.male) = P.C0(P0.male) + P.ageFactor*(P0.now-SDS.males.born(P0.male)) + P.genderDifference*0;
             SDS.males.CD4Death(P0.male) = SDS.males.CD4Infection(P0.male)*(1-(1-rand)^.5)/15;
             [SDS.males.CD4_500(P0.male),SDS.males.CD4_350(P0.male),SDS.males.CD4_200(P0.male)]=...
-                CD4Interp(SDS.males.CD4Infection(P0.male),SDS.males.CD4Death(P0.male),SDS.males.AIDSdeath(P0.male),P0.now);
+                P.CD4Interp(SDS.males.CD4Infection(P0.male),SDS.males.CD4Death(P0.male),SDS.males.AIDSdeath(P0.male),P0.now);
             SDS.males.AIDSdeath(P0.male) = P.timeDeath(P0.male);
             P.enableTest(SDS,P0) %uses P0.index
             
@@ -189,7 +193,7 @@ end
             SDS.females.CD4Death(P0.female) = SDS.females.CD4Infection(P0.female)*(1-(1-rand)^.5)/15;
             SDS.females.AIDSdeath(P0.female) = P.timeDeath(P0.index);
             [SDS.females.CD4_500(P0.female),SDS.females.CD4_350(P0.female),SDS.females.CD4_200(P0.female)]=...
-                CD4Interp(SDS.females.CD4Infection(P0.female),SDS.females.CD4Death(P0.female),SDS.females.AIDSdeath(P0.female),P0.now);
+                P.CD4Interp(SDS.females.CD4Infection(P0.female),SDS.females.CD4Death(P0.female),SDS.females.AIDSdeath(P0.female),P0.now);
             P.enableTest(SDS,P0) %uses P0.index
             for relIdx = find(currentIdx & (SDS.relations.ID(:, SDS.index.female) == P0.female) &...
                     ismember(SDS.relations.ID(:, SDS.index.male),find(isnan(SDS.males.HIV_positive))))'
@@ -273,7 +277,7 @@ end
         Tformation = SDS.relations.time(relationID,1);
         
         P.eventTimes(P0.male, P0.female) = ...
-            transmissionTime(P.rand(P0.male,P0.female), P0.now, Tformation, T, a, P.beta);
+            P.transmissionTime(P.rand(P0.male,P0.female), P0.now, Tformation, T, a, P.beta);
         
         P.lastChange(P0.male, P0.female) = P0.now;
         
@@ -314,7 +318,7 @@ end
         Tformation = SDS.relations.time(relationID,1);
         a = P.alpha(P0.male, P0.female) + loglogP;
         P.rand(P0.male,P0.female) = P.rand(P0.male,P0.female) ...
-            - consumedRand(P0.now, Tformation, T, lastChange, a, P.beta);
+            - P.consumedRand(P0.now, Tformation, T, lastChange, a, P.beta);
         
         if condom %added by Lucio 08/30
             P.probabilityChange(P0.male,P0.female) = 1-P.infectiousness_decreased_by_condom;
@@ -387,7 +391,7 @@ end
         Tformation = SDS.relations.time(relationID,1);
         a = P.alpha(P0.male, P0.female) + loglogP;
         P.rand(P0.male,P0.female) = P.rand(P0.male,P0.female) ...
-            - consumedRand(P0.now, Tformation, T, lastChange, a, P.beta);
+            - P.consumedRand(P0.now, Tformation, T, lastChange, a, P.beta);
         P.alpha(P0.male,P0.female) = log(P.sexActsPerYear*(1-rate)+...
             P.sexActsPerYear*rate*(1-P.infectiousness_decreased_by_condom));
         eventTransmission_update(SDS, P0)
@@ -456,7 +460,7 @@ end
         Tformation = SDS.relations.time(relationID,1);
         alpha = P.alpha(P0.male, P0.female) + loglogP;
         P.rand(P0.male, P0.female) = P.rand(P0.male,P0.female) ...
-            - consumedRand(P0.now, Tformation, T, P.lastChange(P0.male,P0.female), alpha, P.beta);
+            - P.consumedRand(P0.now, Tformation, T, P.lastChange(P0.male,P0.female), alpha, P.beta);
         P.eventTimes(P0.male, P0.female) = Inf;
     end
 end
@@ -515,3 +519,5 @@ end
 eventTransmission('init', SDSG, SDSG.event(3))
 time = eventTransmission('eventTime', SDSG);
 end
+
+
