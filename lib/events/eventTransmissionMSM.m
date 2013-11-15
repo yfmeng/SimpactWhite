@@ -43,6 +43,7 @@ end
         
         P.rand = spTools('rand0toInf', P.number_of_MSM, P.number_of_MSM);
         P.consumedRand = spTools('handle','consumedRand');
+        P.CD4Interp = spTools('handle','CD4Interp');
         P.transmissionTime = spTools('handle','transmissionTime');
         P.sexActsPerYear =event.sexual_behaviour_parameters{2,1}*52;%*(unprotected+(1-unprotected)*(1-condomEffect));
         P.ARVeffect = 1- event.infectiousness_decreased_by_ARV;
@@ -120,6 +121,7 @@ end
         
         % ******* Variables & Constants *******
         P.consumedRand = spTools('handle','consumedRand');
+        P.CD4Interp = spTools('handle','CD4Interp');
         P.transmissionTime = spTools('handle','transmissionTime');
         
     end
@@ -183,7 +185,7 @@ end
             + P.ageFactor*(P0.now-SDS.males.born(MSM_idx_2));
         SDS.males.CD4Death(MSM_idx_2) = SDS.males.CD4Infection(MSM_idx_2)*(1-(1-rand)^.5)/15;
         [SDS.males.CD4_500(MSM_idx_2),SDS.males.CD4_350(MSM_idx_2),SDS.males.CD4_200(MSM_idx_2)]=...
-            CD4Interp(SDS.males.CD4Infection(MSM_idx_2),SDS.males.CD4Death(MSM_idx_2),SDS.males.AIDSdeath(MSM_idx_2),P0.now);
+            P.CD4Interp(SDS.males.CD4Infection(MSM_idx_2),SDS.males.CD4Death(MSM_idx_2),SDS.males.AIDSdeath(MSM_idx_2),P0.now);
         SDS.males.AIDSdeath(MSM_idx_2) = P.timeDeath(P0.MSM_2);
         P0.index = MSM_idx_2;
         P.enableTest(SDS,P0) %uses P0.index
@@ -242,6 +244,10 @@ end
         MSM_idx_1 = MSM(P0.MSM_1);
         MSM_idx_2 = MSM(P0.MSM_2);
         
+        if ~P0.serodiscordantMSM(P0.MSM_1,P0.MSM_2)
+            return
+        end
+        
         timeHIVpos = SDS.males.HIV_positive(MSM_idx_1);
         ARV = SDS.males.ARV(MSM_idx_1);
         condom = SDS.males.condom(MSM_idx_1); %added by Lucio
@@ -288,14 +294,13 @@ end
         relationID_1 = intersect(find(SDS.relationsMSM.ID(:,1)==MSM_idx_1),find(SDS.relationsMSM.ID(:,2)==MSM_idx_2));
         relationID_2 = intersect(find(SDS.relationsMSM.ID(:,2)==MSM_idx_1),find(SDS.relationsMSM.ID(:,1)==MSM_idx_2));
         relationID = union(relationID_1,relationID_2);
-        
         relationID = relationID(end);
         Tformation = SDS.relationsMSM.time(relationID,1);
         
         P.eventTimes(P0.MSM_1,P0.MSM_2) = ...
             P.transmissionTime(P.rand(P0.MSM_1,P0.MSM_2), P0.now, Tformation, T, a, P.beta);
         %P.lastChangeMSM(P0.MSM_1,P0.MSM_2) = P0.now;
-        
+        P0.now
         
     end
 
@@ -478,8 +483,8 @@ msg = '';
 
 props.infectiousness = {
     'variable'  'time [year]'       'transmission probability [%]'
-    't0'        '0'                 5
-    't1'        'min(t, 0.25)'      5
+    't0'        '0'                 3
+    't1'        'min(t, 0.25)'      0.5
     't2'        't1 + (t - t1)*.9'  1.52
     };
 props.AIDS_mortality_distribution = {

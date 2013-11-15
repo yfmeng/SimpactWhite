@@ -58,7 +58,7 @@ end
         
         P = X;
         P.enable = SDS.conception.enable;
-        
+        P.readFertility = spTools('handle','readFertility');
         [P.enableBirth, msg] = spTools('handle', 'eventBirth', 'enable');
         [P.enableANC, msg] = spTools('handle', 'eventANC', 'enable');
         [P.updateTransmission, msg] = spTools('handle', 'eventTransmission', 'update');
@@ -117,8 +117,6 @@ end
         % Invoked by eventFormation_fire
         % Invoked by eventBirth_fire
         
-        %P.pregnant(P0.female) = false;
-        
         if ~P.enable
             return
         end
@@ -159,8 +157,8 @@ end
 
 %% properties
 function [props, msg] = eventConception_properties
-props.constant_fertility_parameter = 2.2;
-props.fertility_rate_from_data_file = true;
+props.constant_fertility_parameter = 1.5;
+props.fertility_rate_from_data_file = false;
 props.fertility_rate_reference_file = 'none';%'/Simpact/empirical_data/sa_fertility.csv';
 msg = 'Birth implemented by birth event.';
 end

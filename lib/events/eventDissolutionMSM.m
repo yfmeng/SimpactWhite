@@ -245,7 +245,7 @@ function [props, msg] = eventDissolutionMSM_properties
 
 msg = '';
 
-props.baseline_factor = log(0.5);
+props.baseline_factor = log(0.25);
 props.community_difference_factor = -1;
 props.current_relations_factor = log(2); %log(4);
 props.individual_behavioural_factor = 0;

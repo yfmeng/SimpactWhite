@@ -134,7 +134,9 @@ end
         
         % ******* Prepare Next *******
         P.blockConception(P0)
+        if P0.serodiscordant(P0.male, P0.female)
         P.blockTransmission(SDS, P0)
+        end
         P0.subset(P0.male, P0.female) = true;
         P0.current(P0.male, P0.female) = false;
         P0 = P.enableFormation(P0);
@@ -144,13 +146,9 @@ end
         P0.subset(:, P0.female) = true;
         P0 = P.updateFormation(SDS, P0, 0);
         P0 = eventDissolution_update(P0);
-%         P0.index = P0.male;
-%         P.updateTest(SDS, P0)
-%         P0.index = P0.female + SDS.number_of_males;
-%         P.updateTest(SDS, P0)
-        
         P0.timeSinceLast(P0.male,:) = 0;
         P0.timeSinceLast(:,P0.female) = 0;
+        
     end
 
 
@@ -177,6 +175,7 @@ end
         
         P.eventTimes(subset) = ...
             P.expLinear(P.alpha(subset), P.beta, 0, P.rand(subset));
+        P.time0(subset) = P0.now;
 
     end
 %% update
@@ -202,12 +201,10 @@ end
             P.preferred_age_difference)/8)-1) + ...
             P.transaction_sex_factor*P0.transactionSex(P0.subset) + ...
             P.community_difference_factor*abs(P0.communityDifference(P0.subset));
-        % P.beta(P0.subset) = P.beta(P0.subset) ;
-        %+ P.behavioural_change_factor.*P0.relationCount(P0.subset);     
         
          P.eventTimes(P0.subset) = ...
              P.expLinear(P.alpha(P0.subset),P.beta(P0.subset), 0, P.rand(P0.subset));
-         
+        P.time0(P0.subset) = P0.now;
         P0.subset(P0.subset) = false;
     end
 %% intervene
@@ -244,7 +241,6 @@ end
         P0.current(P0.male, P0.female) = false;
         end
         P.blockConception(P0)
-        P.blockTransmission(SDS, P0)
     end
 
 end
@@ -263,12 +259,12 @@ function [props, msg] = eventDissolution_properties
 
 msg = '';
 
-props.baseline_factor = log(0.1);
-props.community_difference_factor = -1;
-props.current_relations_factor = log(1.02); %log(4);
+props.baseline_factor = log(0.5);
+props.community_difference_factor = log(0.5);
+props.current_relations_factor = log(1.5); %log(4);
 props.individual_behavioural_factor = 0;
 props.mean_age_factor = 0;% log(0.8); %-log(hazard ration)/(age2-age1);
-props.last_change_factor = log(1.3);
+props.last_change_factor = log(1);
 props.age_limit = 15;
 props.age_difference_factor = log(1);
 props.transaction_sex_factor = log(5);

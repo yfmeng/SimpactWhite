@@ -31,8 +31,7 @@ end
         
         % ******* Function Handles *******
         [P.enableFormation, thisMsg] = spTools('handle', 'eventFormation', 'enable');
-        [P.enableFormationMSM, thisMsg] = spTools('handle', 'eventFormationMSM', 'enable');
-        
+        [P.enableFormationMSM, thisMsg] = spTools('handle', 'eventFormationMSM', 'enable');        
         [P.enableFSW, thisMsg] = spTools('handle', 'eventFSW', 'enable');
 
         if ~isempty(thisMsg)
@@ -58,12 +57,11 @@ end
         elements = SDS.number_of_females;
         msg = '';
         
-	P = X;
-	P.enable = SDS.debut.enable;
+    	P = X;
+        P.enable = SDS.debut.enable;
        
         [P.enableFormation, thisMsg] = spTools('handle', 'eventFormation', 'enable');
-        [P.enableFormationMSM, thisMsg] = spTools('handle', 'eventFormationMSM', 'enable');
-        
+        [P.enableFormationMSM, thisMsg] = spTools('handle', 'eventFormationMSM', 'enable');        
         [P.enableFSW, thisMsg] = spTools('handle', 'eventFSW', 'enable');
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
@@ -94,6 +92,7 @@ end
           if P0.index<= SDS.number_of_males
                 ID = P0.index;
                 P0.adultMales(ID) = true;
+                P0.adultFemales = P0.now-SDS.females.born>=P.debut;
                 P0.timeSinceLast(ID,P0.adultFemales) = 0;                
                 P0.subset(ID,P0.adultFemales) = true;
                 P0.maleAge(ID,P0.adultFemales) = P0.now - SDS.males.born(ID);
@@ -123,16 +122,11 @@ end
             P0.meanAge = (P0.maleAge + P0.femaleAge)/2;
             P0.ageDifference = P0.maleAge - P0.femaleAge;
             P0.communityDifference = cast(P0.maleCommunity - P0.femaleCommunity, SDS.float);
-            
             P0.current_relations_factorMax = max(P0.malecurrent_relations_factor, P0.femalecurrent_relations_factor);
             P0.current_relations_factorMin = min(P0.malecurrent_relations_factor, P0.femalecurrent_relations_factor);
             P0.current_relations_factorMean = (P0.malecurrent_relations_factor + P0.femalecurrent_relations_factor)/2;
-            
-            
-            P0 = P.enableFormation(P0);
-            P0.subset = false(SDS.number_of_males, SDS.number_of_females);%
-            
-            
+
+            P0 = P.enableFormation(P0);            
             P.eventTimes(P0.index) = Inf;
     end
 

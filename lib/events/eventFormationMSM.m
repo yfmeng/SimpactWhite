@@ -40,6 +40,14 @@ end
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
         end
+        [P.updateDissolutionMSM, thisMsg] = spTools('handle', 'eventDissolutionMSM', 'update');
+        if ~isempty(thisMsg)
+            msg = sprintf('%s%s\n', msg, thisMsg);
+        end
+        [P.updateFormation, thisMsg] = spTools('handle', 'eventFormation', 'update');
+        if ~isempty(thisMsg)
+            msg = sprintf('%s%s\n', msg, thisMsg);
+        end
         [P.updateDissolution, thisMsg] = spTools('handle', 'eventDissolution', 'update');
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
@@ -48,6 +56,7 @@ end
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
         end
+        [P.enableTest, thisMsg] = spTools('handle', 'eventTest', 'enable');
         [P.updateTest, thisMsg] = spTools('handle', 'eventTest', 'update');
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
@@ -82,6 +91,7 @@ end
     function X = eventFormationMSM_get(t)
         
         X = P;
+        
     end
 
 
@@ -92,15 +102,16 @@ end
         msg = '';
         
         P = X;
-        P.enable = SDS.formationMSM.enable;
         P.rand0toInf = spTools('handle', 'rand0toInf');
         P.expLinear = spTools('handle', 'expLinear');
         P.intExpLinear = spTools('handle', 'intExpLinear');
-        [P.enableConception, thisMsg] = spTools('handle', 'eventConception', 'enable');
-        [P.enableDissolution, thisMsg] = spTools('handle', 'eventDissolution', 'enable');
-        [P.updateDissolution, thisMsg] = spTools('handle', 'eventDissolution', 'update');
-        [P.enableTransmission, thisMsg] = spTools('handle', 'eventTransmission', 'enable');
         
+        [P.enableDissolutionMSM, thisMsg] = spTools('handle', 'eventDissolutionMSM', 'enable');
+        [P.updateDissolutionMSM, thisMsg] = spTools('handle', 'eventDissolutionMSM', 'update');
+        [P.updateFormation, thisMsg] = spTools('handle', 'eventFormation', 'update');
+        [P.updateDissolution, thisMsg] = spTools('handle', 'eventDissolution', 'update');
+        [P.enableTransmissionMSM, thisMsg] = spTools('handle', 'eventTransmissionMSM', 'enable');
+        [P.enableTest, thisMsg] = spTools('handle', 'eventTest', 'enable');
         [P.updateTest, thisMsg] = spTools('handle', 'eventTest', 'update');
         if P.beta == 0
             P.expLinear = spTools('handle', 'expConstant');
@@ -132,8 +143,8 @@ end
         MSM = find(SDS.males.MSM);
         MSM_idx_1 = MSM(P0.MSM_1);
         MSM_idx_2 = MSM(P0.MSM_2);
-        P0.currentMSM(P0.MSM_1, :) = true;
-        P0.currentMSM(:, P0.MSM_2) = true;
+        P0.currentMSM(P0.MSM_1, P0.MSM_2) = true;
+        P0.currentMSM(P0.MSM_2, P0.MSM_1) = true;
         P0.currentMSM(logical(eye(size(P0.currentMSM))))=false;
         % ******* Formation of Relation *******
         
@@ -152,6 +163,8 @@ end
         P0.subsetMSM(:,P0.MSM_2)=true;
         P0 = eventFormationMSM_update(SDS, P0, 1);
 %         P0 = P.updateDissolutionMSM(P0);
+%        P0 = eventFormation_update(SDS, P0, 1);
+%         P0 = P.updateDissolution(P0);
 %         
         P0.index = MSM_idx_1;
         P.updateTest(SDS, P0)
@@ -166,6 +179,7 @@ end
         if P0.serodiscordantMSM(P0.MSM_1,P0.MSM_2)
         P.enableTransmissionMSM(SDS,P0);
         end
+        P.time0(P0.MSM_1,P0.MSM_2) = P0.now;
 %         P0.timeSinceLastMSM(P0.MSM_1,:) = 0;
 %         P0.timeSinceLastMSM(:,P0.MSM_2) = 0;
     end
@@ -197,7 +211,7 @@ end
         
         P.eventTimes(P0.subsetMSM) = ...
             P.expLinear(P.alpha(P0.subsetMSM),P.beta(P0.subsetMSM),0,P.rand(P0.subsetMSM));
-        P.time0(P0.subsetMSM) = P0.now; % time when the event is enabled
+        P.time0(P0.subsetMSM) = P0.now;
         P0.subsetMSM(P0.subsetMSM) = false;
     end
 
@@ -283,9 +297,8 @@ function [props, msg] = eventFormationMSM_properties
 
 msg = '';
 
-props.baseline_factor = log(0.1);
+props.baseline_factor = log(0.2);
 props.current_relations_factor =log(0.18);
-props.current_relations_factor_fsw = log(1);
 props.current_relations_difference_factor =log(1);
 props.individual_behavioural_factor = 0;
 props.behavioural_change_factor = 0;    % The effect of relations becomes larger during BCC;

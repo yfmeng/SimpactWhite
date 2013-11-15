@@ -100,16 +100,28 @@ end
         msg = '';
         
         P = X;
-        P.enable = SDS.formation.enable;
-        P.rand0toInf = spTools('handle', 'rand0toInf');
         P.expLinear = spTools('handle', 'expLinear');
         P.intExpLinear = spTools('handle', 'intExpLinear');
         [P.enableConception, thisMsg] = spTools('handle', 'eventConception', 'enable');
+        if ~isempty(thisMsg)
+            msg = sprintf('%s%s\n', msg, thisMsg);
+        end
         [P.enableDissolution, thisMsg] = spTools('handle', 'eventDissolution', 'enable');
+        if ~isempty(thisMsg)
+            msg = sprintf('%s%s\n', msg, thisMsg);
+        end
         [P.updateDissolution, thisMsg] = spTools('handle', 'eventDissolution', 'update');
+        if ~isempty(thisMsg)
+            msg = sprintf('%s%s\n', msg, thisMsg);
+        end
         [P.enableTransmission, thisMsg] = spTools('handle', 'eventTransmission', 'enable');
-        
+        if ~isempty(thisMsg)
+            msg = sprintf('%s%s\n', msg, thisMsg);
+        end
         [P.updateTest, thisMsg] = spTools('handle', 'eventTest', 'update');
+        if ~isempty(thisMsg)
+            msg = sprintf('%s%s\n', msg, thisMsg);
+        end
         if P.beta == 0
             P.expLinear = spTools('handle', 'expConstant');
             P.intExpLinear = spTools('handle', 'intExpConstant');
@@ -147,7 +159,9 @@ end
         P.enableConception(SDS, P0)          % uses P0.male; P0.female
         P.enableDissolution(P0)         % uses P0.index
         
+        if P0.serodiscordant(P0.male, P0.female)
         P.enableTransmission(SDS,P0);
+        end
         
         % ******* Prepare Next *******
         P.eventTimes(P0.index) = Inf;   % block formation
@@ -180,6 +194,7 @@ end
         P0.subset(:,~P0.adultFemales) = false;
         P.rand(P0.subset) = P.rand0toInf(1,sum(sum(P0.subset)));
         subsetRelationsCount=repmat(P0.femaleRelationCount, size(P0.subset, 1), 1);
+        MSM = repmat(P0.MSM',1, size(P0.subset, 2));
         P.alpha(P0.subset) = P.baseline_factor*P0.partnering(P0.subset) + ...
             P.current_relations_factor.*P0.relationCount(P0.subset).*(~P0.transactionSex(P0.subset)) + ...
             P.current_relations_factor_fsw.*P0.relationCount(P0.subset).*P0.transactionSex(P0.subset) + ...
@@ -187,10 +202,10 @@ end
             P.female_current_relations_factor*subsetRelationsCount(P0.subset).*(~P0.transactionSex(P0.subset))+...
             P.mean_age_factor*(P0.meanAge(P0.subset) - P.age_limit) + ...
             P.last_change_factor*P0.timeSinceLast(P0.subset) + ...
-            P.age_difference_factor*(exp(abs(P0.ageDifference(P0.subset) - ...
-            P.preferred_age_difference)/8)-1) + ...
+            P.age_difference_factor*(P0.ageDifference(P0.subset) - P.preferred_age_difference) + ...
             P.transaction_sex_factor*P0.transactionSex(P0.subset) + ...
-            P.community_difference_factor*abs(P0.communityDifference(P0.subset));
+            P.community_difference_factor*abs(P0.communityDifference(P0.subset))+...
+            P.MSM_factor*MSM(P0.subset);
         P.beta(P0.subset) = P.beta(P0.subset) + ...
             P.behavioural_change_factor.*P0.relationCount(P0.subset);
         
@@ -213,7 +228,7 @@ end
         
         P.eventTimes(P0.subset) = ...
             P.expLinear(P.alpha(P0.subset),P.beta(P0.subset),0,P.rand(P0.subset));
-        P.time0(P0.subset) = P0.now; % time when the event is enabled
+        P.time0(P0.subset) = P0.now; % time when the event is enabled/updated
         P0.subset(P0.subset) = false;
     end
 
@@ -249,9 +264,9 @@ end
             P0.relationCount(:,P0.female) = P0.relationCount(:,P0.female) - 1;
 
         end
-                    femaleRelationMatrix = repmat(P0.femaleRelationCount, SDS.number_of_males, 1);
-            
-            P0.relationCountDifference = abs(...
+        femaleRelationMatrix = repmat(P0.femaleRelationCount, SDS.number_of_males, 1);
+        MSM = repmat(P0.MSM',1, size(P0.subset, 2));
+        P0.relationCountDifference = abs(...
                 repmat(P0.maleRelationCount,1, SDS.number_of_females) - ...
                 femaleRelationMatrix);
         P.alpha(P0.subset) = P.baseline_factor*P0.partnering(P0.subset) + ...
@@ -261,10 +276,11 @@ end
             P.female_current_relations_factor*femaleRelationMatrix(P0.subset).*(~P0.transactionSex(P0.subset))+...
             P.mean_age_factor*(P0.meanAge(P0.subset) - P.age_limit) + ...
             P.last_change_factor*P0.timeSinceLast(P0.subset) + ...
-            P.age_difference_factor*(exp(abs(P0.ageDifference(P0.subset) - ...
-            P.preferred_age_difference)/8)-1) + ...
+            P.age_difference_factor*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference)) + ...
             P.transaction_sex_factor*P0.transactionSex(P0.subset) + ...
-            P.community_difference_factor*abs(P0.communityDifference(P0.subset));
+            P.community_difference_factor*abs(P0.communityDifference(P0.subset))+...
+            P.MSM_factor*MSM(P0.subset);
+        
         P.beta(P0.subset) = P.beta(P0.subset) + ...
             P.behavioural_change_factor.*P0.relationCount(P0.subset);
         
@@ -285,7 +301,7 @@ end
         end
         P.eventTimes(P0.subset) = ...
             P.expLinear(P.alpha(P0.subset),P.beta(P0.subset), 0, P.rand(P0.subset));
-        
+        P.time0(P0.subset) = P0.now;
         P0.subset(P0.subset) = false;
     end
 %% intervene
@@ -321,7 +337,6 @@ props.current_relations_factor =log(0.18);
 props.current_relations_factor_fsw = log(1);
 props.male_current_relations_factor =log(1);
 props.female_current_relations_factor =log(0.9);
-
 props.current_relations_difference_factor =log(1);
 props.individual_behavioural_factor = 0;
 props.behavioural_change_factor = 0;    % The effect of relations becomes larger during BCC;
@@ -332,6 +347,7 @@ props.age_difference_factor = -log(5)/5;
 props.preferred_age_difference = 4.5;
 props.community_difference_factor = log(1.3);
 props.transaction_sex_factor = log(3);
+props.MSM_factor = log(1);
 props.fix_turn_over_rate = false;
 props.warm_up_period = 1;
 props.turn_over_rate = 0.6;

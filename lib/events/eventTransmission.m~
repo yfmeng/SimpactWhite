@@ -309,7 +309,10 @@ end
             P.transmissionTime(P.rand(P0.male,P0.female), P0.now, Tformation, T, a, P.beta);
         
         P.lastChange(P0.male, P0.female) = P0.now;
-        
+        ch = 'lala';
+        print(ch)
+        P.eventTimes(P0.male, P0.female)
+        print(ch)
     end
 
 %% update
@@ -469,10 +472,6 @@ end
             debugMsg('isempty(P)')
             return
         end
-        if ~P0.serodiscordant(P0.male,P0.female)
-            return
-        end
-        
         timeHIVpos = SDS.males.HIV_positive(P0.male);
         idx = P0.male;
         

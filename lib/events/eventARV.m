@@ -181,10 +181,7 @@ end
           else
               SDS.ARV.CD4(P.ARVs) = interp1q([0 0.25 timeDeath]', [CD4Infection 0.75*CD4Infection CD4Death]',P0.now-timeHIVpos);
           end
-          
-          if SDS.ARV.CD4(P.ARVs) ==0
-         SDS.ARV.CD4(P.ARVs)  ==0
-          end
+
           eventARV_block(P0); %uses P0.index               
     end
 
