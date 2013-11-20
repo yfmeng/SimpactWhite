@@ -157,7 +157,7 @@ end
         
         currentIdx = SDS.relations.time(:, SDS.index.stop) == Inf;  % indexing the ongoing relationships
         P0.subset = P.false;
-        
+        SDS.count2 = SDS.count2+1;
         % ******* Infection *******
         if (P0.male~=0&&isnan(SDS.males.HIV_positive(P0.male)))||P0.female==0
             % female infecting male
@@ -249,7 +249,7 @@ end
 
 
 %% enable
-    function eventTransmission_enable(SDS, P0)
+    function SDS = eventTransmission_enable(SDS, P0)
         % Invoked by eventFormation_fire
         
         if ~P.enable||~P0.serodiscordant(P0.male,P0.female)
@@ -294,8 +294,8 @@ end
         end
         
         probability = P.probability * P.probabilityChange(P0.male,P0.female);
-        loglogP =  log(-log(1- probability/100));
-        %loglogP = log(probability/100);
+        %loglogP =  log(-log(1- probability/100));
+        loglogP = log(probability/100);
         a = P.alpha(P0.male, P0.female) + loglogP;       
         T = [timeHIVpos, P.t(2:end, idx)'+timeHIVpos];
         %         T = [timeHIVpos, P.t(2:end, idx)'];
@@ -304,12 +304,11 @@ end
         relationID = relationID(end);
         Tformation = SDS.relations.time(relationID,1);
         % temp
-        % Tformation = min(Tformation,P.lastChange(P0.male,P0.female));
         P.eventTimes(P0.male, P0.female) = ...
             P.transmissionTime(P.rand(P0.male,P0.female), P0.now, Tformation, T, a, P.beta);
         
         P.lastChange(P0.male, P0.female) = P0.now;
-        
+        SDS.record = [SDS.record,P.eventTimes(P0.male, P0.female)];
     end
 
 %% update
@@ -334,8 +333,9 @@ end
             %circumcision = false;
         end
         probability = P.probability * P.probabilityChange(P0.male,P0.female);
-        loglogP =  log(-log(1- probability/100));
-        %loglogP = log(probability/100);
+        %loglogP =  log(-log(1- probability/100));
+        
+        loglogP = log(probability/100);
         lastChange = P.lastChange(P0.male, P0.female);
         T = [timeHIVpos, P.t(2:end, idx)'+timeHIVpos];
         %         T = [timeHIVpos, P.t(2:end, idx)'];
@@ -407,8 +407,8 @@ end
             %circumcision = false;
         end
         probability = P.probability * P.probabilityChange(P0.male,P0.female);
-        loglogP =  log(-log(1- probability/100));
-        %loglogP = log(probability/100);
+        %loglogP =  log(-log(1- probability/100));
+        loglogP = log(probability/100);
         lastChange = P.lastChange(P0.male, P0.female);
         T = [timeHIVpos, P.t(2:end, idx)'+timeHIVpos];
         %         T = [timeHIVpos, P.t(2:end, idx)'];
@@ -469,9 +469,6 @@ end
             debugMsg('isempty(P)')
             return
         end
-        if ~P0.serodiscordant(P0.male,P0.female)
-            return
-        end
         
         timeHIVpos = SDS.males.HIV_positive(P0.male);
         idx = P0.male;
@@ -482,7 +479,8 @@ end
             idx = SDS.number_of_males + P0.female;
         end
         probability = P.probability * P.probabilityChange(P0.male,P0.female);
-        loglogP = log(-log(1- probability/100));
+        %loglogP = log(-log(1- probability/100));
+        loglogP = log(probability/100);
         T = [timeHIVpos, P.t(2:end, idx)'+timeHIVpos];
         
         relationID = intersect(find(SDS.relations.ID(:,1)==P0.male),find(SDS.relations.ID(:,2)==P0.female));

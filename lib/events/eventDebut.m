@@ -126,7 +126,8 @@ end
             P0.current_relations_factorMin = min(P0.malecurrent_relations_factor, P0.femalecurrent_relations_factor);
             P0.current_relations_factorMean = (P0.malecurrent_relations_factor + P0.femalecurrent_relations_factor)/2;
 
-            P0 = P.enableFormation(P0);            
+            P0 = P.enableFormation(P0);     
+            P0.subset = false(SDS.number_of_males, SDS.number_of_females);
             P.eventTimes(P0.index) = Inf;
     end
 

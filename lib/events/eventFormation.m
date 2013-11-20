@@ -160,7 +160,8 @@ end
         P.enableDissolution(P0)         % uses P0.index
         
         if P0.serodiscordant(P0.male, P0.female)
-        P.enableTransmission(SDS,P0);
+        SDS = P.enableTransmission(SDS,P0);
+        SDS.count1 = SDS.count1+1;
         end
         
         % ******* Prepare Next *******
