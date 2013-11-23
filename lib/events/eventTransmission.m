@@ -308,7 +308,8 @@ end
             P.transmissionTime(P.rand(P0.male,P0.female), P0.now, Tformation, T, a, P.beta);
         
         P.lastChange(P0.male, P0.female) = P0.now;
-        SDS.record = [SDS.record,P.eventTimes(P0.male, P0.female)];
+        SDS.record = [SDS.record;P.eventTimes(P0.male, P0.female)];
+        SDS.record2 = [SDS.record2;P0.male,P0.female];
     end
 
 %% update
