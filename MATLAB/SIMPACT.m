@@ -22,7 +22,7 @@ Prefs.dataName = 'SDS';
 Prefs.dataFcn = @modelHIV;  % handle to data function which initialises the data structure
 Prefs.runFcn = @spRun;      % handle to run function which stops/pauses/starts simulation
 Prefs.menu = {
-    modelHIVrestart('handle', 'menu')
+    modelHIV('handle', 'menu')
     spTools('handle', 'menu')
     spGraphs('handle', 'menu')
     };      % handles to menu functions

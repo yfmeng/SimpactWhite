@@ -45,14 +45,14 @@ import javax.swing.JFileChooser
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 %import javax.swing.JSplitPane
-import org.jdesktop.swingx.JXFrame
-import org.jdesktop.swingx.JXMultiSplitPane
-import org.jdesktop.swingx.JXPanel
-import org.jdesktop.swingx.JXTitledPanel
-import org.jdesktop.swingx.MultiSplitLayout
-import org.jdesktop.swingx.painter.CompoundPainter
-import org.jdesktop.swingx.painter.MattePainter
-import org.jdesktop.swingx.painter.PinstripePainter
+import org.jdesktop.swingx.JXFrame.*
+import org.jdesktop.swingx.JXMultiSplitPane.*
+import org.jdesktop.swingx.JXPanel.*
+import org.jdesktop.swingx.JXTitledPanel.*
+import org.jdesktop.swingx.MultiSplitLayout.*
+import org.jdesktop.swingx.painter.CompoundPainter.*
+import org.jdesktop.swingx.painter.MattePainter.*
+import org.jdesktop.swingx.painter.PinstripePainter.*
 
 
 % ******* Handles *******
@@ -368,7 +368,7 @@ handles.frame.setVisible(true)
         import javax.swing.ButtonGroup
         import javax.swing.JLabel
         import javax.swing.JToggleButton
-        import org.jdesktop.swingx.JXStatusBar
+        import org.jdesktop.swingx.JXStatusBar.*
         %import org.jdesktop.swingx.JXStatusBar.Constraint
         
         handles.statusBar = JXStatusBar();
@@ -1838,7 +1838,7 @@ handles.frame.setVisible(true)
             import javax.swing.JTextField
             import javax.swing.ListSelectionModel
             import javax.swing.table.DefaultTableModel
-            import org.jdesktop.swingx.JXDatePicker
+            import org.jdesktop.swingx.JXDatePicker.*
             
             % colNames = {};
             [rows, cols] = size(value);
