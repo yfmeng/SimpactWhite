@@ -261,7 +261,7 @@ msg = '';
 
 props.baseline_factor = log(0.8);
 props.community_difference_factor = log(0.8);
-props.current_relations_factor = log(1.2); %log(4);
+props.current_relations_factor = log(1); %log(4);
 props.individual_behavioural_factor = 0;
 props.mean_age_factor = log(0.9); %-log(hazard ration)/(age2-age1);
 props.last_change_factor = log(1.2);

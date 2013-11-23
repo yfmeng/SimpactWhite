@@ -161,7 +161,6 @@ end
         
         if P0.serodiscordant(P0.male, P0.female)
         SDS = P.enableTransmission(SDS,P0);
-        SDS.count1 = SDS.count1+1;
         end
         
         % ******* Prepare Next *******

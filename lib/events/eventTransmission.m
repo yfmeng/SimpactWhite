@@ -157,7 +157,6 @@ end
         
         currentIdx = SDS.relations.time(:, SDS.index.stop) == Inf;  % indexing the ongoing relationships
         P0.subset = P.false;
-        SDS.count2 = SDS.count2+1;
         % ******* Infection *******
         if (P0.male~=0&&isnan(SDS.males.HIV_positive(P0.male)))||P0.female==0
             % female infecting male
@@ -179,7 +178,7 @@ end
                     ismember(SDS.relations.ID(:, SDS.index.female),find(isnan(SDS.females.HIV_positive))))'
                 % ******* Enable Transmission for His Other Relations *******
                 P0.female = SDS.relations.ID(relIdx, SDS.index.female);
-                eventTransmission_enable(SDS, P0)   % uses P0.male; P0.female
+                eventTransmission_enable(SDS, P0);   % uses P0.male; P0.female
                 P0.subset(:, P0.female) = true;
             end
             
@@ -195,7 +194,7 @@ end
                     % ******* Enable Transmission for His Other Relations *******
                     P0.MSM_2 = SDS.relationsMSM.ID(relIdx, 2);
                     P0.MSM_2 = sum(P0.MSM(1:P0.MSM_2));
-                    P.enableTransmissionMSM(SDS, P0)   
+                    P.enableTransmissionMSM(SDS, P0);   
                 end
                 
                 relIdxFound = find(currentIdxMSM&(SDS.relationsMSM.ID(:,2) == P0.male)&...
@@ -204,7 +203,7 @@ end
                     % ******* Enable Transmission for His Other Relations *******
                     P0.MSM_2 = SDS.relationsMSM.ID(relIdx, 1);
                     P0.MSM_2 = sum(P0.MSM(1:P0.MSM_2));
-                    P.enableTransmissionMSM(SDS, P0)  
+                    P.enableTransmissionMSM(SDS, P0);
                 end     
 
             end
@@ -227,7 +226,7 @@ end
                     ismember(SDS.relations.ID(:, SDS.index.male),find(isnan(SDS.males.HIV_positive))))'
                 % ******* Enable Transmission for Her Other Relations *******
                 P0.male = SDS.relations.ID(relIdx, SDS.index.male);
-                eventTransmission_enable(SDS, P0)   % uses P0.male; P0.female
+                eventTransmission_enable(SDS, P0);   % uses P0.male; P0.female
                 P0.subset(P0.male, :) = true;
             end
             P.enableMTCT(SDS, P0, P0.female);
@@ -237,7 +236,7 @@ end
             +P.t(3,P0.index);
         P.enableARV(P0,delay);
         
-        P.enableAIDSmortality(P0, P.timeDeath(P0.index))    % uses P0.index
+        P.enableAIDSmortality(P0, P.timeDeath(P0.index)); % uses P0.index
         
         if P0.male~=0&&P0.female~=0
             P.lastChange(P0.male, P0.female) = P0.now;
@@ -308,8 +307,6 @@ end
             P.transmissionTime(P.rand(P0.male,P0.female), P0.now, Tformation, T, a, P.beta);
         
         P.lastChange(P0.male, P0.female) = P0.now;
-        SDS.record = [SDS.record;P.eventTimes(P0.male, P0.female)];
-        SDS.record2 = [SDS.record2;P0.male,P0.female];
     end
 
 %% update

@@ -483,11 +483,6 @@ else %P0now<T(3)
         end
     end
 end
-if isnan(t)||~isreal(t)||t<0
-    t = Inf;
-    display t;
-    display(t);
-end
 end
 
 %% CRF
