@@ -195,10 +195,8 @@ end
                 P0.malecurrent_relations_factor = repmat(SDS.males.current_relations_factor(:), 1, SDS.number_of_females);
                 
                 Pmort.index = ID;
-                
-                P0.index = ID;
-                P.enableCircumcision(SDS, P0)       % uses P0.index
-                P0.index = P0.female;
+                Pmort.now = P0.now;
+                P.enableCircumcision(SDS, Pmort)       % uses P0.index
                 
             case 'females'
                 P0.alive(:, ID) = true; 

@@ -59,10 +59,6 @@ end
         
         
         % ******* Influence Subset *******
-        P0.true = true(SDS.number_of_males, SDS.number_of_females);
-        %maleRange = ones(1, SDS.integer) : SDS.number_of_males;
-        %femaleRange = ones(1, SDS.integer) : SDS.number_of_females;
-        %P0.subset = true(SDS.number_of_males, SDS.number_of_females);
         maleRange = 1 : SDS.initial_number_of_males;
         femaleRange = 1 : SDS.initial_number_of_females;
         P0.subset = falseMatrix;
@@ -101,9 +97,10 @@ end
         
         maleRange = 1:SDS.initial_number_of_males;
         femaleRange = 1:SDS.initial_number_of_females;
-        ageMale = MonteCarloAgeSA(SDS.initial_number_of_males, 'man',SDS.age_file);%, '/Simpact/empirical_data/sa_2003.csv');
+        
+        ageMale = empiricalAge(SDS.initial_number_of_males, 'man',SDS.age_file);
         SDS.males.born(maleRange) = cast(-ageMale, SDS.float);    % -years old
-        ageFemale = MonteCarloAgeSA(SDS.initial_number_of_females, 'woman',SDS.age_file);%, '/Simpact/empirical_data/sa_2003.csv');
+        ageFemale = empiricalAge(SDS.initial_number_of_females, 'woman',SDS.age_file);
         SDS.females.born(femaleRange) = cast(-ageFemale, SDS.float);% -years old
 %         adjust = round(SDS.initial_number_of_males*0.004);
 %         SDS.males.born((SDS.initial_number_of_males+1):(SDS.initial_number_of_males+adjust)) = -rand(1,adjust)*2;
@@ -281,16 +278,13 @@ end
         femaleHIVpos(:, ~isnan(SDS.females.HIV_positive)) = true;
         P0.serodiscordant = xor(maleHIVpos, femaleHIVpos);
         P0.serodiscordantMSM = falseMatrixMSM;
-        P0.HIVpos = [
-            SDS.males.HIV_positive, SDS.females.HIV_positive
-            ]';
         P0.ARV = [malesFalse,femalesFalse];
         P0.birth = false;
         P0.conception = false;
         P0.ANC= false;
         P0.introduce = false;
         P0.optionB = femalesFalse;
-        P0.thisPregnantTime = nan(1, SDS.number_of_females);
+        P0.thisPregnantTime = zeros(1, SDS.number_of_females);
         P0.breastfeedingStop = nan(1, SDS.number_of_females);
         P0.thisChild = nan(1, SDS.number_of_females);
         P0.MSM = SDS.males.MSM;

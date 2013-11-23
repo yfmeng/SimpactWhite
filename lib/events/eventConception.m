@@ -28,14 +28,14 @@ end
         P.pregnant = false(1, SDS.number_of_females);
         
         P.rand0toInf = spTools('handle', 'rand0toInf');
-        
+        P.readFertility = spTools('handle','readFertility');
         if ~P.fertility_rate_from_data_file
             P.fertility_rate_parameter = event.constant_fertility_parameter;
         else
             daysPerYear = spTools('daysPerYear');
             P.start = datenum(SDS.start_date)/daysPerYear;
             filename = event.fertility_rate_reference_file;
-            P.data = readFertility(filename);
+            P.data = P.readFertility(filename);
             P.data = [-Inf, P.data(1,2);P.data;Inf, P.data(size(P.data,1),2)];           
             P.fertility_rate_parameter = interp1q(P.data(:,1),P.data(:,2),P.start);
             
@@ -58,7 +58,7 @@ end
         
         P = X;
         P.enable = SDS.conception.enable;
-        
+        P.readFertility = spTools('handle','readFertility');
         [P.enableBirth, msg] = spTools('handle', 'eventBirth', 'enable');
         [P.enableANC, msg] = spTools('handle', 'eventANC', 'enable');
         [P.updateTransmission, msg] = spTools('handle', 'eventTransmission', 'update');
@@ -117,8 +117,6 @@ end
         % Invoked by eventFormation_fire
         % Invoked by eventBirth_fire
         
-        %P.pregnant(P0.female) = false;
-        
         if ~P.enable
             return
         end
@@ -159,8 +157,8 @@ end
 
 %% properties
 function [props, msg] = eventConception_properties
-props.constant_fertility_parameter = 2.2;
-props.fertility_rate_from_data_file = true;
+props.constant_fertility_parameter = 1.5;
+props.fertility_rate_from_data_file = false;
 props.fertility_rate_reference_file = 'none';%'/Simpact/empirical_data/sa_fertility.csv';
 msg = 'Birth implemented by birth event.';
 end

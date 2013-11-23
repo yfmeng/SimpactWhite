@@ -36,6 +36,7 @@ end
         [P.enableARV, msg] = spTools('handle', 'eventARV', 'enable');
         [P.fireTest, msg] = spTools('handle', 'eventTest', 'fire');
         [P.enableMTCT, msg] = spTools('handle', 'eventMTCT', 'enable');
+        [P.enableTransmissionMSM, msg] = spTools('handle', 'eventTransmissionMSM', 'enable');
         
         % ******* Variables & Constants *******
         P.rand = spTools('rand0toInf', SDS.number_of_males, SDS.number_of_females);
@@ -44,7 +45,9 @@ end
         P.ARVeffect = 1- event.infectiousness_decreased_by_ARV;
         P.probabilityChange = ones(SDS.number_of_males, SDS.number_of_females);
         P.eventTimes = inf(SDS.number_of_males, SDS.number_of_females, SDS.float);
-        
+        P.CD4Interp = spTools('handle','CD4Interp');
+        P.consumedRand = spTools('handle','consumedRand');
+        P.transmissionTime = spTools('handle','transmissionTime');
         varWeibull = event.AIDS_mortality_distribution{2, 1};
         P.shape = event.AIDS_mortality_distribution{2, 2};
         P.scale = event.AIDS_mortality_distribution{2, 3};
@@ -116,10 +119,13 @@ end
         [P.enableTest, msg] = spTools('handle', 'eventTest', 'enable');
         [P.fireTest, msg] = spTools('handle', 'eventTest', 'fire');
         [P.enableMTCT, msg] = spTools('handle', 'eventMTCT', 'enable');
+        [P.enableTransmissionMSM, msg] = spTools('handle', 'eventTransmissionMSM', 'enable');
         
         % ******* Variables & Constants *******
         P.rand = spTools('rand0toInf', SDS.number_of_males, SDS.number_of_females);
-        
+        P.CD4Interp = spTools('handle','CD4Interp');
+        P.consumedRand = spTools('handle','consumedRand');
+        P.transmissionTime = spTools('handle','transmissionTime');
     end
 
 %% eventTimes
@@ -151,7 +157,6 @@ end
         
         currentIdx = SDS.relations.time(:, SDS.index.stop) == Inf;  % indexing the ongoing relationships
         P0.subset = P.false;
-        
         % ******* Infection *******
         if (P0.male~=0&&isnan(SDS.males.HIV_positive(P0.male)))||P0.female==0
             % female infecting male
@@ -165,16 +170,42 @@ end
             SDS.males.CD4Infection(P0.male) = P.C0(P0.male) + P.ageFactor*(P0.now-SDS.males.born(P0.male)) + P.genderDifference*0;
             SDS.males.CD4Death(P0.male) = SDS.males.CD4Infection(P0.male)*(1-(1-rand)^.5)/15;
             [SDS.males.CD4_500(P0.male),SDS.males.CD4_350(P0.male),SDS.males.CD4_200(P0.male)]=...
-                CD4Interp(SDS.males.CD4Infection(P0.male),SDS.males.CD4Death(P0.male),SDS.males.AIDSdeath(P0.male),P0.now);
+                P.CD4Interp(SDS.males.CD4Infection(P0.male),SDS.males.CD4Death(P0.male),SDS.males.AIDSdeath(P0.male),P0.now);
             SDS.males.AIDSdeath(P0.male) = P.timeDeath(P0.male);
             P.enableTest(SDS,P0) %uses P0.index
-            
+           
             for relIdx = find(currentIdx & (SDS.relations.ID(:, SDS.index.male) == P0.male) &...
                     ismember(SDS.relations.ID(:, SDS.index.female),find(isnan(SDS.females.HIV_positive))))'
                 % ******* Enable Transmission for His Other Relations *******
                 P0.female = SDS.relations.ID(relIdx, SDS.index.female);
-                eventTransmission_enable(SDS, P0)   % uses P0.male; P0.female
+                eventTransmission_enable(SDS, P0);   % uses P0.male; P0.female
                 P0.subset(:, P0.female) = true;
+            end
+            
+            if P0.MSM(P0.male)
+                % enable MSM transmission
+                P0.MSM_1 = sum(P0.MSM(1:P0.male));
+                P0.serodiscordantMSM(P0.MSM_1,:) = ~P0.serodiscordantMSM(P0.MSM_1,:);
+                P0.serodiscordantMSM(:,P0.MSM_1) = ~P0.serodiscordantMSM(:,P0.MSM_1);
+                currentIdxMSM = SDS.relationsMSM.time(:, SDS.index.stop) == Inf; 
+                relIdxFound = find(currentIdxMSM&(SDS.relationsMSM.ID(:,1) == P0.male)&...
+                    ismember(SDS.relationsMSM.ID(:,2),find(isnan(SDS.males.HIV_positive))))';
+                for relIdx = relIdxFound
+                    % ******* Enable Transmission for His Other Relations *******
+                    P0.MSM_2 = SDS.relationsMSM.ID(relIdx, 2);
+                    P0.MSM_2 = sum(P0.MSM(1:P0.MSM_2));
+                    P.enableTransmissionMSM(SDS, P0);   
+                end
+                
+                relIdxFound = find(currentIdxMSM&(SDS.relationsMSM.ID(:,2) == P0.male)&...
+                    ismember(SDS.relationsMSM.ID(:,1),find(isnan(SDS.males.HIV_positive))))';
+                for relIdx = relIdxFound
+                    % ******* Enable Transmission for His Other Relations *******
+                    P0.MSM_2 = SDS.relationsMSM.ID(relIdx, 1);
+                    P0.MSM_2 = sum(P0.MSM(1:P0.MSM_2));
+                    P.enableTransmissionMSM(SDS, P0);
+                end     
+
             end
             
         else
@@ -189,13 +220,13 @@ end
             SDS.females.CD4Death(P0.female) = SDS.females.CD4Infection(P0.female)*(1-(1-rand)^.5)/15;
             SDS.females.AIDSdeath(P0.female) = P.timeDeath(P0.index);
             [SDS.females.CD4_500(P0.female),SDS.females.CD4_350(P0.female),SDS.females.CD4_200(P0.female)]=...
-                CD4Interp(SDS.females.CD4Infection(P0.female),SDS.females.CD4Death(P0.female),SDS.females.AIDSdeath(P0.female),P0.now);
+                P.CD4Interp(SDS.females.CD4Infection(P0.female),SDS.females.CD4Death(P0.female),SDS.females.AIDSdeath(P0.female),P0.now);
             P.enableTest(SDS,P0) %uses P0.index
             for relIdx = find(currentIdx & (SDS.relations.ID(:, SDS.index.female) == P0.female) &...
                     ismember(SDS.relations.ID(:, SDS.index.male),find(isnan(SDS.males.HIV_positive))))'
                 % ******* Enable Transmission for Her Other Relations *******
                 P0.male = SDS.relations.ID(relIdx, SDS.index.male);
-                eventTransmission_enable(SDS, P0)   % uses P0.male; P0.female
+                eventTransmission_enable(SDS, P0);   % uses P0.male; P0.female
                 P0.subset(P0.male, :) = true;
             end
             P.enableMTCT(SDS, P0, P0.female);
@@ -205,22 +236,22 @@ end
             +P.t(3,P0.index);
         P.enableARV(P0,delay);
         
-        P.enableAIDSmortality(P0, P.timeDeath(P0.index))    % uses P0.index
+        P.enableAIDSmortality(P0, P.timeDeath(P0.index)); % uses P0.index
         
         if P0.male~=0&&P0.female~=0
             P.lastChange(P0.male, P0.female) = P0.now;
         end
         
-        % ******* Influence on All Events: Points *******
+         % ******* Influence on All Events: Points *******
         P0.subset = P0.subset & P0.current;
     end
 
 
 %% enable
-    function  eventTransmission_enable(SDS, P0)
+    function SDS = eventTransmission_enable(SDS, P0)
         % Invoked by eventFormation_fire
         
-        if ~P.enable||~P0.serodiscordant(P0.male, P0.female)||~P0.aliveMales(P0.male)||~P0.aliveFemales(P0.female)
+        if ~P.enable||~P0.serodiscordant(P0.male,P0.female)
             return
         end
         
@@ -262,8 +293,8 @@ end
         end
         
         probability = P.probability * P.probabilityChange(P0.male,P0.female);
-        loglogP =  log(-log(1- probability/100));
-        %loglogP = log(probability/100);
+        %loglogP =  log(-log(1- probability/100));
+        loglogP = log(probability/100);
         a = P.alpha(P0.male, P0.female) + loglogP;       
         T = [timeHIVpos, P.t(2:end, idx)'+timeHIVpos];
         %         T = [timeHIVpos, P.t(2:end, idx)'];
@@ -271,14 +302,11 @@ end
         relationID = intersect(find(SDS.relations.ID(:,1)==P0.male),find(SDS.relations.ID(:,2)==P0.female));
         relationID = relationID(end);
         Tformation = SDS.relations.time(relationID,1);
-        
+        % temp
         P.eventTimes(P0.male, P0.female) = ...
-            transmissionTime(P.rand(P0.male,P0.female), P0.now, Tformation, T, a, P.beta);
+            P.transmissionTime(P.rand(P0.male,P0.female), P0.now, Tformation, T, a, P.beta);
         
         P.lastChange(P0.male, P0.female) = P0.now;
-        
-        
-        
     end
 
 %% update
@@ -303,8 +331,9 @@ end
             %circumcision = false;
         end
         probability = P.probability * P.probabilityChange(P0.male,P0.female);
-        loglogP =  log(-log(1- probability/100));
-        %loglogP = log(probability/100);
+        %loglogP =  log(-log(1- probability/100));
+        
+        loglogP = log(probability/100);
         lastChange = P.lastChange(P0.male, P0.female);
         T = [timeHIVpos, P.t(2:end, idx)'+timeHIVpos];
         %         T = [timeHIVpos, P.t(2:end, idx)'];
@@ -314,7 +343,7 @@ end
         Tformation = SDS.relations.time(relationID,1);
         a = P.alpha(P0.male, P0.female) + loglogP;
         P.rand(P0.male,P0.female) = P.rand(P0.male,P0.female) ...
-            - consumedRand(P0.now, Tformation, T, lastChange, a, P.beta);
+            - P.consumedRand(P0.now, Tformation, T, lastChange, a, P.beta);
         
         if condom %added by Lucio 08/30
             P.probabilityChange(P0.male,P0.female) = 1-P.infectiousness_decreased_by_condom;
@@ -352,7 +381,7 @@ end
         %monitor
         
         P.update = true;
-        eventTransmission_enable(SDS,P0)
+        eventTransmission_enable(SDS,P0);
         P.update = false;
     end
 
@@ -376,8 +405,8 @@ end
             %circumcision = false;
         end
         probability = P.probability * P.probabilityChange(P0.male,P0.female);
-        loglogP =  log(-log(1- probability/100));
-        %loglogP = log(probability/100);
+        %loglogP =  log(-log(1- probability/100));
+        loglogP = log(probability/100);
         lastChange = P.lastChange(P0.male, P0.female);
         T = [timeHIVpos, P.t(2:end, idx)'+timeHIVpos];
         %         T = [timeHIVpos, P.t(2:end, idx)'];
@@ -387,7 +416,7 @@ end
         Tformation = SDS.relations.time(relationID,1);
         a = P.alpha(P0.male, P0.female) + loglogP;
         P.rand(P0.male,P0.female) = P.rand(P0.male,P0.female) ...
-            - consumedRand(P0.now, Tformation, T, lastChange, a, P.beta);
+            - P.consumedRand(P0.now, Tformation, T, lastChange, a, P.beta);
         P.alpha(P0.male,P0.female) = log(P.sexActsPerYear*(1-rate)+...
             P.sexActsPerYear*rate*(1-P.infectiousness_decreased_by_condom));
         eventTransmission_update(SDS, P0)
@@ -438,6 +467,7 @@ end
             debugMsg('isempty(P)')
             return
         end
+        
         timeHIVpos = SDS.males.HIV_positive(P0.male);
         idx = P0.male;
         
@@ -447,7 +477,8 @@ end
             idx = SDS.number_of_males + P0.female;
         end
         probability = P.probability * P.probabilityChange(P0.male,P0.female);
-        loglogP = - log(log(1- probability/100));
+        %loglogP = log(-log(1- probability/100));
+        loglogP = log(probability/100);
         T = [timeHIVpos, P.t(2:end, idx)'+timeHIVpos];
         
         relationID = intersect(find(SDS.relations.ID(:,1)==P0.male),find(SDS.relations.ID(:,2)==P0.female));
@@ -456,7 +487,7 @@ end
         Tformation = SDS.relations.time(relationID,1);
         alpha = P.alpha(P0.male, P0.female) + loglogP;
         P.rand(P0.male, P0.female) = P.rand(P0.male,P0.female) ...
-            - consumedRand(P0.now, Tformation, T, P.lastChange(P0.male,P0.female), alpha, P.beta);
+            - P.consumedRand(P0.now, Tformation, T, P.lastChange(P0.male,P0.female), alpha, P.beta);
         P.eventTimes(P0.male, P0.female) = Inf;
     end
 end
@@ -515,3 +546,5 @@ end
 eventTransmission('init', SDSG, SDSG.event(3))
 time = eventTransmission('eventTime', SDSG);
 end
+
+
