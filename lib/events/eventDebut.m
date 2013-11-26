@@ -115,7 +115,7 @@ end
                 P0.adultMales = P0.now-SDS.males.born>=P.debut;
                 P0.timeSinceLast(P0.adultMales,ID) = 0;
                 P0.subset(P0.adultFemales, ID) = true;
-                P0.femaleAge(P0.adultFemales,ID) = P0.now - SDS.females.born(ID);
+                P0.femaleAge(P0.adultMales,ID) = P0.now - SDS.females.born(ID);
                 P.enableFSW(SDS,P0,ID);
           end
         
