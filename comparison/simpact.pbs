@@ -1,0 +1,15 @@
+#!/bin/bash -l
+#PBS -l walltime=30:00:00
+#PBS -l nodes=2:ppn=5:westmere
+#PBS -l pmem=4gb
+#PBS -A lp_h_hiv_prevention
+#PBS -m ae
+#PBS -M yolandafmeng@gmail.com
+module load matlab/R2011b
+
+cd $PBS_O_WORKDIR
+
+folder="${VSC_MOUNTS}/SimpactWhite/"
+
+./run_trial.sh  /apps/leuven/matlab/R2011b/ \
+                        ${r}

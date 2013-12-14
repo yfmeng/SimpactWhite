@@ -157,7 +157,7 @@ end
 
 %% properties
 function [props, msg] = eventConception_properties
-props.constant_fertility_parameter = 1.5;
+props.constant_fertility_parameter = 1;
 props.fertility_rate_from_data_file = false;
 props.fertility_rate_reference_file = 'none';%'/Simpact/empirical_data/sa_fertility.csv';
 msg = 'Birth implemented by birth event.';

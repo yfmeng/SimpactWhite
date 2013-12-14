@@ -333,18 +333,18 @@ function [props, msg] = eventFormation_properties
 msg = '';
 
 props.baseline_factor = log(0.1);
-props.current_relations_factor =log(0.18);
-props.current_relations_factor_fsw = log(1);
-props.male_current_relations_factor =log(1);
-props.female_current_relations_factor =log(0.9);
+props.current_relations_factor =0;%log(0.18);
+props.current_relations_factor_fsw =0;% log(1);
+props.male_current_relations_factor = 0;%log(1);
+props.female_current_relations_factor =0;%log(0.9);
 props.current_relations_difference_factor =log(1);
 props.individual_behavioural_factor = 0;
 props.behavioural_change_factor = 0;    % The effect of relations becomes larger during BCC;
-props.mean_age_factor = -log(5)/50; %-log(hazard ration)/(age2-age1);
-props.last_change_factor =log(1.3);% log(1);         % NOTE: intHazard = Inf for d = -c !!!
+props.mean_age_factor = 0;%-log(5)/50; %-log(hazard ration)/(age2-age1);
+props.last_change_factor =0;%log(1.3);% log(1);         % NOTE: intHazard = Inf for d = -c !!!
 props.age_limit = 15;                 % no couple formation below this age
-props.age_difference_factor = -log(5)/10;
-props.preferred_age_difference = 4.5;
+props.age_difference_factor =0;% -log(5)/10;
+props.preferred_age_difference =0;% 4.5;
 props.community_difference_factor =0;% log();
 props.transaction_sex_factor =0;% log(3);
 props.MSM_factor = log(1);

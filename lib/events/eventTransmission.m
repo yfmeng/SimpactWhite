@@ -514,7 +514,7 @@ props.infectiousness_increased_during_conception = 1;
 props.infectiousness_decreased_by_circumcision = 0.3;
 props.CD4_distribution_at_infection = {
     'baseline' 'age factor' 'gender difference' 'shape'
-    600         5            40                          0.1
+    800         5            40                          0.1
     };
 
 props.sexual_behaviour_parameters = {'baseline' 'mean age' 'age difference' 'relation type' 'relations count' 'serodiscordant' 'HIV disclosure' 'time'

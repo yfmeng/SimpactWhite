@@ -214,7 +214,7 @@ end
 
 %% properties
 function [props, msg] = eventARV_properties
-props.ARV_program_start_time = 2;
+props.ARV_program_start_time = 10;
 props.average_delay_after_AIDS = 1/12;
 props.lifetime_extension_by_ARV = {
 'scale factor' 'shape'

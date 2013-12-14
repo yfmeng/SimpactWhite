@@ -260,14 +260,14 @@ function [props, msg] = eventDissolution_properties
 msg = '';
 
 props.baseline_factor = log(0.8);
-props.community_difference_factor = log(0.8);
+props.community_difference_factor = 0;%log(0.8);
 props.current_relations_factor = log(1); %log(4);
 props.individual_behavioural_factor = 0;
-props.mean_age_factor = log(0.9); %-log(hazard ration)/(age2-age1);
-props.last_change_factor = log(1.4);
+props.mean_age_factor =0;% log(0.9); %-log(hazard ration)/(age2-age1);
+props.last_change_factor =0;% log(1.4);
 props.age_limit = 15;
-props.age_difference_factor = log(1.1);% log(1);
+props.age_difference_factor = 0;%log(1.1);% log(1);
 props.transaction_sex_factor = 0;%log(5);
-props.preferred_age_difference = 4.5;
+props.preferred_age_difference = 0;%4.5;
 
 end

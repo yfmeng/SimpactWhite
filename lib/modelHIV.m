@@ -99,13 +99,13 @@ end
         femaleRange = 1:SDS.initial_number_of_females;
         
         ageMale = empiricalAge(SDS.initial_number_of_males, 'man',SDS.age_file);
-        SDS.males.born(maleRange) = cast(-ageMale, SDS.float);    % -years old
         ageFemale = empiricalAge(SDS.initial_number_of_females, 'woman',SDS.age_file);
+        %temp
+        ageMale = 30*ones(1,SDS.number_of_males);
+        ageFemale = 30*ones(1,SDS.number_of_females);
+        SDS.males.born(maleRange) = cast(-ageMale, SDS.float);    % -years old
         SDS.females.born(femaleRange) = cast(-ageFemale, SDS.float);% -years old
-%         adjust = round(SDS.initial_number_of_males*0.004);
-%         SDS.males.born((SDS.initial_number_of_males+1):(SDS.initial_number_of_males+adjust)) = -rand(1,adjust)*2;
-%         SDS.females.born((SDS.initial_number_of_females+1):(SDS.initial_number_of_females+adjust)) = -rand(1,adjust)*2;
-%         
+%        
         % ******* Communities TEMP!!! *******
         
         communityMale = empiricalCommunity(SDS.initial_number_of_males, SDS.number_of_community_members);
