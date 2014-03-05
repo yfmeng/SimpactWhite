@@ -83,7 +83,9 @@ end
 
 %% fire
     function [SDS, P0] = eventARV_fire(SDS, P0)
-      
+        if ~P.enable
+            return
+        end
         
         
        P0.ARV(P0.index)=true;

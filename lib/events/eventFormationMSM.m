@@ -135,7 +135,9 @@ end
 
 %% fire
     function [SDS, P0] = eventFormationMSM_fire(SDS, P0)
-        
+        if ~P.enable
+            return
+        end
         % ******* Indices *******
         P.relation = P.relation + 1;
         P0.MSM_1 = rem(P0.index - 1, P.number_of_MSM) + 1;

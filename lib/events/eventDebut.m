@@ -42,7 +42,7 @@ end
         P.debut = event.debut_age;
         age = -[SDS.males.born, SDS.females.born];
         P.eventTimes = P.debut-age;
-        P.eventTimes(P.eventTimes<0) = rand(1,sum(P.eventTimes<0))/1000;
+        P.eventTimes(P.eventTimes<0) = rand(1,sum(P.eventTimes<0))/100;
     end
 
 
@@ -88,14 +88,14 @@ end
 
 %% fire
     function [SDS, P0] = eventDebut_fire(SDS, P0) 
-       
           if P0.index<= SDS.number_of_males
+              % males
                 ID = P0.index;
                 P0.adultMales(ID) = true;
-                P0.adultFemales = P0.now-SDS.females.born>=P.debut;
-                P0.timeSinceLast(ID,P0.adultFemales) = 0;                
+                
                 P0.subset(ID,P0.adultFemales) = true;
-                P0.maleAge(ID,P0.adultFemales) = P0.now - SDS.males.born(ID);
+                P0.adult(ID,P0.adultFemales) = true;
+                P0.maleAge(ID,:) = P0.now - SDS.males.born(ID);
                 
                 if SDS.males.MSM(ID)
                   MSM_idx = sum(SDS.males.MSM(1:ID));
@@ -112,10 +112,9 @@ end
           else
                 ID = P0.index- SDS.number_of_males;
                 P0.adultFemales(ID) = true;
-                P0.adultMales = P0.now-SDS.males.born>=P.debut;
-                P0.timeSinceLast(P0.adultMales,ID) = 0;
-                P0.subset(P0.adultFemales, ID) = true;
-                P0.femaleAge(P0.adultMales,ID) = P0.now - SDS.females.born(ID);
+                P0.subset(P0.adultMales, ID) = true;
+                P0.adult(P0.adultMales, ID) = true;
+                P0.femaleAge(:,ID) = P0.now - SDS.females.born(ID);
                 P.enableFSW(SDS,P0,ID);
           end
         
@@ -125,9 +124,8 @@ end
             P0.current_relations_factorMax = max(P0.malecurrent_relations_factor, P0.femalecurrent_relations_factor);
             P0.current_relations_factorMin = min(P0.malecurrent_relations_factor, P0.femalecurrent_relations_factor);
             P0.current_relations_factorMean = (P0.malecurrent_relations_factor + P0.femalecurrent_relations_factor)/2;
-
-            P0 = P.enableFormation(P0);     
-            P0.subset = false(SDS.number_of_males, SDS.number_of_females);
+            
+            P0 = P.enableFormation(P0);%use P0.subset
             P.eventTimes(P0.index) = Inf;
     end
 

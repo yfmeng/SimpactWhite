@@ -62,7 +62,7 @@ end
         maleRange = 1 : SDS.initial_number_of_males;
         femaleRange = 1 : SDS.initial_number_of_females;
         P0.subset = falseMatrix;
-        
+        P0.adult = falseMatrix;
         P0.aliveMales = malesFalse;
         P0.aliveMales(maleRange) = true;
         P0.aliveFemales = femalesFalse;
@@ -101,8 +101,8 @@ end
         ageMale = empiricalAge(SDS.initial_number_of_males, 'man',SDS.age_file);
         ageFemale = empiricalAge(SDS.initial_number_of_females, 'woman',SDS.age_file);
         %temp
-        ageMale = 30*ones(1,SDS.number_of_males);
-        ageFemale = 30*ones(1,SDS.number_of_females);
+        ageMale = wblrnd(32,1.5,1,SDS.initial_number_of_males);
+        ageFemale = wblrnd(30,1.5,1,SDS.initial_number_of_females);
         SDS.males.born(maleRange) = cast(-ageMale, SDS.float);    % -years old
         SDS.females.born(femaleRange) = cast(-ageFemale, SDS.float);% -years old
 %        
@@ -176,6 +176,9 @@ end
         SDS.person_years_aquired = 0;
         SDS.males.behaviour_factor = rand(1, SDS.number_of_males);
         SDS.females.behaviour_factor = rand(1, SDS.number_of_females);
+        
+        SDS.males.intervened = malesNaN;
+        SDS.females.intervened = malesNaN;
         
         SDS.females.sex_worker = femalesFalse;
         
@@ -258,7 +261,7 @@ end
         P0.malecurrent_relations_factor = repmat(SDS.males.current_relations_factor(:), 1, SDS.number_of_females);%
         P0.femalecurrent_relations_factor = repmat(SDS.females.current_relations_factor(:)', SDS.number_of_males, 1);%
         
-        P0.timeSinceLast = zeros(SDS.number_of_males,SDS.number_of_females);
+     
         
         P0.ageDifference = P0.maleAge - P0.femaleAge;
         
@@ -383,9 +386,8 @@ end
         % ******* 2: Find First Event & Its Entry *******
         [P0.eventTime, firstIdx] = min(P0.eventTimes);  % index into event times
         P0.eventTime(~isreal(P0.eventTime)) = real(P0.eventTime);
-        if P0.eventTime <= 0
+        if P0.eventTime <= 0||isnan(P0.eventTime)
             problem = find(P0.cumsum >= firstIdx, 1) - 1;
-            time = P0.eventTime;
             %debugMsg 'eventTime == 0' %you can ignore this mention as present -Fei  08/17/2012
             P0.eventTime = 0.0001;
             %keyboard
@@ -406,7 +408,6 @@ end
         P0.meanAge = P0.meanAge + P0.eventTime;
         P0.meanAgeMSM = P0.meanAgeMSM + P0.eventTime;
         
-        P0.timeSinceLast = P0.timeSinceLast + P0.eventTime;
         
         % ******* 4: Advance All Events *******
         for ii = 1 : P0.numberOfEvents

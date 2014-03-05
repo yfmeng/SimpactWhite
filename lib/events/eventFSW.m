@@ -53,8 +53,9 @@ end
         P.randStop = P.rand0toInf(1,elements);
         ageSince15 = -SDS.females.born -15;
         ageSince15(ageSince15<=0) = Inf;
+        if P.enable
         P.eventTimes = P.expLinear(P.alpha,P.beta,ageSince15,P.rand);
-        
+        end
     end
 
 %% get
@@ -126,6 +127,9 @@ end
 
 %% enable
     function eventFSW_enable(SDS, P0, index)
+        if ~P.enable
+            return
+        end
         ageSince15 = P0.femaleAge(1,index)-15;
             P.alpha(index) = P.alpha(index)+P.age_factor*ageSince15;
             P.eventTimes(index) = P.expLinear(P.alpha(index),P.beta(index),0,P.rand(index));

@@ -54,9 +54,10 @@ end
         
         % ******* Variables & Constants *******
         P.alpha = -inf(SDS.number_of_males, SDS.number_of_females, SDS.float);
-        P.beta = P.mean_age_factor + P.last_change_factor;
+        P.beta = ones(SDS.number_of_males, SDS.number_of_females, SDS.float)*P.last_change_factor;
         P.rand = P.rand0toInf(SDS.number_of_males, SDS.number_of_females);
         P.time0 = zeros(SDS.number_of_males, SDS.number_of_females, SDS.float);
+        P.lastChange = zeros(SDS.number_of_males, SDS.number_of_females, SDS.float);
         P.eventTimes = inf(SDS.number_of_males, SDS.number_of_females, SDS.float);
         
         % ******* Checks *******
@@ -137,17 +138,15 @@ end
         if P0.serodiscordant(P0.male, P0.female)
         P.blockTransmission(SDS, P0)
         end
-        P0.subset(P0.male, P0.female) = true;
-        P0.current(P0.male, P0.female) = false;
-        P0 = P.enableFormation(P0);
         
         % ******* Influence on All Events: Cross *******
         P0.subset(P0.male, :) = true;
         P0.subset(:, P0.female) = true;
         P0 = P.updateFormation(SDS, P0, 0);
         P0 = eventDissolution_update(P0);
-        P0.timeSinceLast(P0.male,:) = 0;
-        P0.timeSinceLast(:,P0.female) = 0;
+        P0.subset(P0.male, P0.female) = true;
+        P0.current(P0.male, P0.female) = false;
+        P0 = P.enableFormation(P0);
         
     end
 
@@ -168,14 +167,14 @@ end
         P.alpha(subset) = P.baseline_factor + ...
             P.current_relations_factor*P0.relationCount(subset) + ...
             P.mean_age_factor*(P0.meanAge(subset) - P.age_limit) + ...
-            P.last_change_factor*P0.timeSinceLast(subset) + ...
             P.age_difference_factor*abs(P0.ageDifference(subset) - P.preferred_age_difference) +...
             P.transaction_sex_factor*P0.transactionSex(subset) + ...
             P.community_difference_factor*(P0.communityDifference(subset)==0);
         
         P.eventTimes(subset) = ...
-            P.expLinear(P.alpha(subset), P.beta, 0, P.rand(subset));
+            P.expLinear(P.alpha(subset), P.beta(subset), 0, P.rand(subset));
         P.time0(subset) = P0.now;
+        P.lastChange(subset) = P0.now;
 
     end
 %% update
@@ -189,22 +188,20 @@ end
         P0.subset(:,~P0.adultFemales) = false;
        
         Pc = P.intExpLinear(P.alpha(P0.subset),P.beta(P0.subset),...
-            0,min(P0.timeSinceLast(P0.subset),P0.now-P.time0(P0.subset)));
+            P.lastChange(P0.subset)-P.time0(P0.subset),P0.now-P.time0(P0.subset));
 	    P.rand(P0.subset) = P.rand(P0.subset)-Pc;
         P.rand(P.rand<0)=P.rand0toInf(1,sum(sum(P.rand<0)));
         
         P.alpha(P0.subset) = P.baseline_factor*P0.partnering(P0.subset) + ...
             P.current_relations_factor.*P0.relationCount(P0.subset) + ... %P.current_relations_difference_factor*P0.relationCountDifference(P0.subset)
             P.mean_age_factor*(P0.meanAge(P0.subset) - P.age_limit) + ...
-            P.last_change_factor*P0.timeSinceLast(P0.subset) + ...
-            P.age_difference_factor*(exp(abs(P0.ageDifference(P0.subset) - ...
-            P.preferred_age_difference)/8)-1) + ...
+            P.age_difference_factor*abs(P0.ageDifference(P0.subset) - P.preferred_age_difference) +...
             P.transaction_sex_factor*P0.transactionSex(P0.subset) + ...
             P.community_difference_factor*abs(P0.communityDifference(P0.subset));
         
          P.eventTimes(P0.subset) = ...
              P.expLinear(P.alpha(P0.subset),P.beta(P0.subset), 0, P.rand(P0.subset));
-        P.time0(P0.subset) = P0.now;
+        P.lastChange(P0.subset) = P0.now;
         P0.subset(P0.subset) = false;
     end
 %% intervene
@@ -235,9 +232,7 @@ end
         P0.relationCountDifference = abs(...
             repmat(P0.maleRelationCount, 1, SDS.number_of_females) - ...
             repmat(P0.femaleRelationCount, SDS.number_of_males, 1));
-        
-        P0.timeSinceLast(P0.male, :) = 0;
-        P0.timeSinceLast(:, P0.female) = 0;
+
         P0.current(P0.male, P0.female) = false;
         end
         P.blockConception(P0)
@@ -259,11 +254,11 @@ function [props, msg] = eventDissolution_properties
 
 msg = '';
 
-props.baseline_factor = log(0.8);
+props.baseline_factor = log(0.6);
 props.community_difference_factor = 0;%log(0.8);
 props.current_relations_factor = log(1); %log(4);
 props.individual_behavioural_factor = 0;
-props.mean_age_factor =0;% log(0.9); %-log(hazard ration)/(age2-age1);
+props.mean_age_factor = log(1); %-log(hazard ration)/(age2-age1);
 props.last_change_factor =0;% log(1.4);
 props.age_limit = 15;
 props.age_difference_factor = 0;%log(1.1);% log(1);

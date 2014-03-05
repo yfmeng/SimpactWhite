@@ -306,6 +306,7 @@ end
 %% expLinear
 function eventTime = spTools_expLinear(alpha, beta, t0, P)
 % Event-time for hazards of the linear exponent kind:
+% time since t = 0
 %   h(t) = exp(alpha + beta t)
 % with integral:
 %   H(t) = e^alpha/beta (e^(beta t) - e^(beta t0)) + T0 = P
@@ -346,6 +347,76 @@ function eventTime = spTools_expConstant(alpha, ~, t0, P)
 eventTime = P ./ exp(alpha) + t0;
 end
 
+%% fixFormation
+function alphaNew = spTools_fixFormation(alpha,beta,t,subset0,subset1,alpha0)
+add = sum(sum(subset1))>sum(sum(subset0)); 
+% % for beta ==0
+%     
+% %     sub0b0 = subset0&beta==0;
+% %     sub1b0 = subset1&beta==0;
+% %     h = exp(alpha);
+% %     lambda = (exp(sum(sum(h(sub0b0).*t(sub0b0))))/exp(sum(sum(h(sub1b0).*t(sub1b0)))))^(1/sum(sum(sub1b0)));
+% %     alphaNewB0 = log(1-(1-exp(t(sub1b0).*h(sub1b0)))/lambda);
+% %     alphaNewB0 = log(alphaNewB0./t(sub1b0));
+% for beta =/=0     
+     h = exp(alpha+beta.*t);
+     c = (1-exp(beta.*t))./beta;
+     if add
+         n0 = sum(sum(subset0,1)~=0)+sum(sum(subset0,2)~=0);
+         n1 = sum(sum(subset1,1)~=0)+sum(sum(subset1,2)~=0);
+         added = subset1&~subset0;
+         lambda = prod(1-exp(exp(alpha(added)).*c(added)))*n0/n1;
+      else         
+          added = subset0&~subset1;
+          subset1 = subset0;
+          lambda = prod(1-exp(exp(alpha(added)).*c(added)))/prod(1-exp(exp(alpha0).*c(added)));      
+      end
+     
+     lambda = 1/(lambda)^(1/sum(sum(subset1)));
+     alphaNew = alpha;
+     if ~(~isfinite(lambda)||isnan(lambda)||lambda==0||abs(lambda-1)>=0.5)
+        alphaNewB = log(1-(1-exp(h(subset1).*c(subset1)))/lambda);
+        alphaNewB = log(alphaNewB./c(subset1));
+        alphaNew = alpha;
+        alphaNew(subset1)=alphaNewB;
+     end
+     %if (~isfinite(lambda)||isnan(lambda)||lambda==0||abs(lambda-1)>=0.5)
+     display('=====')
+     lambda
+     sum(sum(subset0))
+     sum(sum(subset1))
+     display('=====')
+     
+end
+
+%% fixFormation2
+function alphaNew = spTools_fixFormation2(alpha,beta,t,subset0,subset1,alpha0)
+        n0 = sum(sum(subset0,1)~=0)+sum(sum(subset0,2)~=0);
+        n1 = sum(sum(subset1,1)~=0)+sum(sum(subset1,2)~=0);
+     if sum(sum(subset0))==sum(sum(subset1))
+         lambda = log(sum(exp(alpha0+beta(subset0&~subset1).*t(subset0&~subset1))))...
+             -log(sum(exp(alpha(subset0&~subset1)+beta(subset0&~subset1).*t(subset0&~subset1))))...
+             +log(n1)-log(n0);
+     else
+        lambda = log(n1)-log(n0);
+     end
+     lambda(~isfinite(lambda)|isnan(lambda)|lambda==0) = 0;
+     alphaNew = alpha;
+     alphaNew(subset1)=alpha(subset1)+lambda;
+
+     display('=====')
+     lambda
+     display('=====')
+     
+end
+%% fixFormation3
+function alphaNew = spTools_fixFormation3(alpha,beta,t,subset1,tor,n1)
+     h = sum(sum(exp(alpha(subset1)+beta(subset1).*t(subset1))));
+     lambda = log(n1)+log(tor*2)-log(h);
+     lambda(~isfinite(lambda)|isnan(lambda)|lambda==0) = 0;
+     alphaNew = alpha;
+     alphaNew(subset1)=alphaNew(subset1)+lambda;
+end
 
 %% meshgrid: x row vector, y column vector
 function [xx, yy] = spTools_meshgrid(x, y)
@@ -379,10 +450,9 @@ end
 %% rand0toInf
 function P = spTools_rand0toInf(rowCount, colCount)
 % range rand = [0.0 ... 1.0], mean of rand = 0.5
-% while log(1/0.5) = 0.69, mean of this distribution = 1.0
+% while log(0.5) = 0.69, mean of this distribution = 1.0
 % median of this distribution = 0.69
 
-%P = log(1./rand(rowCount, colCount));
 P = -log(rand(rowCount, colCount));     % better performance
 end
 
@@ -763,8 +833,6 @@ msg = '';
 
 ok = true;
 end
-
-
 
 %%
 function spTools_
