@@ -99,6 +99,7 @@ end
         P.targetMale = true(1,SDS.number_of_males)&P.male&isnan(SDS.males.intervened);
         P.targetFemale = true(1,SDS.number_of_males)&P.female&isnan(SDS.females.intervened);
         P.targetMale = P.targetMale&SDS.males.born>(-P.maxAge)&SDS.males.born<=(-P.minAge);
+
         P.targetFemale = P.targetFemale&SDS.females.born>(-P.maxAge)&SDS.females.born<=(-P.minAge);
         if P.range
             P.targetMale = P.targetMale&SDS.males.community==1;
@@ -114,12 +115,16 @@ end
             P.targetFemale = find(P.targetFemale);
             P.targetFemale = intersect(P.targetMale,selectFemale);
         end
+        
         P0.subset(:) = false;
         P0.subset(P.targetMale,:)=true;
         P0.subset(:,P.targetFemale)=true;
+        P0.subset(P0.intervened) = false;
+        
         names = {'baseline_factor','preferred_age_difference','age_difference_factor'};
         values = [P.baselineChange,P.ageDifChange,P.ageDifFactorChange];
-        P.interveneFormation(P0,names,values);
+        P0 = P.interveneFormation(P0,names,values);
+        P0.intervened(P0.subset==true)=true;
         P0.subset(:) = false;
         %temporary
         SDS.males.intervened(P.targetMale) = P0.now;
@@ -155,18 +160,18 @@ end
 
 %% properties
 function [props, msg] = eventAgeMixChange_properties
-props.intervention_time = '01-Jan-1999';
+props.intervention_time = '02-Jan-1998';
 props.end_time = '01-Jan-2005';
-props.recruit = false;
-props.recruit_frequency_per_year = 2;
+props.recruit = true;
+props.recruit_frequency_per_year = 1;
 props.max_effect_size = 200;
 props.effect_males=true;
 props.effect_females = true;
 props.effect_age_lower_bound = 10;
-props.effect_age_upper_bound = 30;
+props.effect_age_upper_bound = 20;
 props.effect_cluster = 0;
 props.baseline_change = 0;
-props.age_difference_change = 0;
+props.age_difference_change = -7;
 props.age_difference_factor_change = -0.05;
 msg = 'change age mixing behaviour';
 end

@@ -261,11 +261,8 @@ end
         P0.malecurrent_relations_factor = repmat(SDS.males.current_relations_factor(:), 1, SDS.number_of_females);%
         P0.femalecurrent_relations_factor = repmat(SDS.females.current_relations_factor(:)', SDS.number_of_males, 1);%
         
-     
-        
         P0.ageDifference = P0.maleAge - P0.femaleAge;
-        
-        %%%%%%%
+        P0.intervened = falseMatrix;
         P0.communityDifference = cast(P0.maleCommunity - P0.femaleCommunity, SDS.float);
           
         P0.current_relations_factorMax = max(P0.malecurrent_relations_factor,P0.femalecurrent_relations_factor);%

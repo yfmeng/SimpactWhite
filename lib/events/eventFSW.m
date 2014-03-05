@@ -104,7 +104,7 @@ end
             for male = find(P0.aliveMales)
                 P0.male = male;
                 P0.female = P0.index;
-                P0 = P.updateFormation(SDS,P0,3);
+                P0 = P.updateFormation(P0,3);
                 P0 = P.updateDissolution(P0);
             end
             eventFSW_retire(P0);
@@ -115,7 +115,7 @@ end
             for male = find(P0.aliveMales)
                 P0.male = male;
                 P0.female = P0.index;
-                P0 = P.updateFormation(SDS,P0,3);
+                P0 = P.updateFormation(P0,3);
                 P0 = P.updateDissolution(P0);
             end
             P.rand(P0.index)=P.rand0toInf(1,1);

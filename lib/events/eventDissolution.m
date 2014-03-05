@@ -142,7 +142,7 @@ end
         % ******* Influence on All Events: Cross *******
         P0.subset(P0.male, :) = true;
         P0.subset(:, P0.female) = true;
-        P0 = P.updateFormation(SDS, P0, 0);
+        P0 = P.updateFormation(P0, 0);
         P0 = eventDissolution_update(P0);
         P0.subset(P0.male, P0.female) = true;
         P0.current(P0.male, P0.female) = false;
