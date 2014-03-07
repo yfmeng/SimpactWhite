@@ -27,19 +27,13 @@ end
         P.eventTimes = inf(SDS.number_of_males, SDS.number_of_females, SDS.float);
         P.pregnant = false(1, SDS.number_of_females);
         
-        P.rand0toInf = spTools('handle', 'rand0toInf');
-        P.readFertility = spTools('handle','readFertility');
-        if ~P.fertility_rate_from_data_file
-            P.fertility_rate_parameter = event.constant_fertility_parameter;
-        else
-            daysPerYear = spTools('daysPerYear');
-            P.start = datenum(SDS.start_date)/daysPerYear;
-            filename = event.fertility_rate_reference_file;
-            P.data = P.readFertility(filename);
-            P.data = [-Inf, P.data(1,2);P.data;Inf, P.data(size(P.data,1),2)];           
-            P.fertility_rate_parameter = interp1q(P.data(:,1),P.data(:,2),P.start);
-            
+        P.beta = event.time_factor;
+        P.expLinear = spTools('handle','expLinear');
+        if P.beta ==0
+            P.expLinear = spTools('handle','expConstant');
         end
+        P.weeksPerYear = spTools('daysPerYear')/7;
+        P.rand0toInf = spTools('handle', 'rand0toInf');
         %P.enableBirth = eventBirth('handle', 'enable');
         [P.enableBirth, msg] = spTools('handle', 'eventBirth', 'enable');
         [P.enableANC, msg] = spTools('handle', 'eventANC', 'enable');
@@ -116,32 +110,16 @@ end
     function eventConception_enable(SDS,P0)
         % Invoked by eventFormation_fire
         % Invoked by eventBirth_fire
-        
-        if ~P.enable
+        motherAge = P0.now-SDS.females.born(P0.female);
+        if ~P.enable||P0.pregnant(P0.female)||motherAge>P.female_age_limit
             return
         end
-        
-        if P0.pregnant(P0.female)
-            return
-        end
-        adjustment = 0.39;
-        motherBorn =  SDS.females.born(P0.female);
-        age = P0.now - motherBorn;
-        age = [age^4 age^3 age^2 age 1];
-        coefficient = [-1.96e-05     0.002876     -0.15373        3.448      -25.407];
-        
-        if ~P.fertility_rate_from_data_file
-            fertilityFactor = P.fertility_rate_parameter;
-        else          
-            fertilityFactor = interp1q(P.data(:,1),P.data(:,2),P0.now +P.start+1.5);            
-        end
-        fertilityFactor= sum(age.*coefficient)*adjustment*fertilityFactor;
-        P_F = P.rand0toInf(1, 1);
-        P.eventTimes(P0.male, P0.female) = P_F/fertilityFactor;
-        if P.eventTimes(P0.male, P0.female)<0
-            P.eventTimes(P0.male, P0.female) = Inf;
-        end
-        
+        alpha = log(P0.coitalFrequency(P0.male,P0.female)*P.weeksPerYear)...
+            +P.female_age_factor*motherAge...
+            +P.previous_children_factor*P0.motheredChildren(P0.female)...
+            +P.contraception_effect*P0.contraception(P0.male,P0.female);
+        P.eventTimes(P0.male,P0.female) = P.expLinear(alpha,P.beta,0,P.rand0toInf(1,1));
+
     end
 
 
@@ -157,9 +135,12 @@ end
 
 %% properties
 function [props, msg] = eventConception_properties
-props.constant_fertility_parameter = 0.1;
-props.fertility_rate_from_data_file = false;
-props.fertility_rate_reference_file = 'none';%'/Simpact/empirical_data/sa_fertility.csv';
+props.baseline_factor = 0.5;
+props.female_age_factor = -0.2;
+props.contraception_effect = -0.5;
+props.previous_children_factor = -0.5;
+props.time_factor = 0.1;
+props.female_age_limit = 50;
 msg = 'Birth implemented by birth event.';
 end
 

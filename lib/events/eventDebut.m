@@ -121,10 +121,10 @@ end
             P0.meanAge = (P0.maleAge + P0.femaleAge)/2;
             P0.ageDifference = P0.maleAge - P0.femaleAge;
             P0.communityDifference = cast(P0.maleCommunity - P0.femaleCommunity, SDS.float);
-            P0.current_relations_factorMax = max(P0.malecurrent_relations_factor, P0.femalecurrent_relations_factor);
-            P0.current_relations_factorMin = min(P0.malecurrent_relations_factor, P0.femalecurrent_relations_factor);
-            P0.current_relations_factorMean = (P0.malecurrent_relations_factor + P0.femalecurrent_relations_factor)/2;
-            
+%             P0.current_relations_factorMax = max(P0.malecurrent_relations_factor, P0.femalecurrent_relations_factor);
+%             P0.current_relations_factorMin = min(P0.malecurrent_relations_factor, P0.femalecurrent_relations_factor);
+%             P0.current_relations_factorMean = (P0.malecurrent_relations_factor + P0.femalecurrent_relations_factor)/2;
+%             
             P0 = P.enableFormation(P0);%use P0.subset
             P.eventTimes(P0.index) = Inf;
     end

@@ -161,10 +161,14 @@ end
         SDS.relations.ID(P.relation, :) = [P0.male, P0.female];
         SDS.relations.time(P.relation, P.indexStartStop) = [P0.now, Inf];
         SDS.relations.proximity(P.relation) = P0.communityDifference(P0.male,P0.female);
+        % temp
+        P0.coitalFrequency(P0.male,P0.female) = 2.5;
+        P0.contraception(P0.male,P0.female) = 0.5;
+        P0.condomUse(P0.male,P0.female) = 0.3;
+        P0.contraception(P0.male,P0.female) = max(P0.contraception(P0.male,P0.female),P0.condomUse(P0.male,P0.female));
         
         P.enableConception(SDS, P0)          % uses P0.male; P0.female
         P.enableDissolution(P0)         % uses P0.index
-        
         if P0.serodiscordant(P0.male, P0.female)
         SDS = P.enableTransmission(SDS,P0);
         end

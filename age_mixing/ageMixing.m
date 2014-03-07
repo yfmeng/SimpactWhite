@@ -7,8 +7,8 @@ SDS.end_date = '01-Jan-2013';
 n = 400;
 SDS.initial_number_of_females = n;
 SDS.initial_number_of_males = n;
-SDS.number_of_males = round(n*1.2); 
-SDS.number_of_females = round(n*1.2);
+SDS.number_of_males = n*1.2; 
+SDS.number_of_females = n*1.2;
 SDS.number_of_relations = SDS.number_of_males*SDS.number_of_females;
 SDS.males.born(1:n) = -ageCast('male',n);% ageCast need to be contructed
 SDS.females.born(1:n) = -ageCast('female',n); 
@@ -21,18 +21,19 @@ SDS.FSW.enable=0;
 SDS.formation_MSM.enable = 0;
 SDS.formation.fix_turn_over_rate = 0;
 % formation (baseline)
-SDS.formation.baseline_factor = -0.2;
-SDS.formation.current_relations_factor = -0.5;
-SDS.formation.age_difference_factor = -0.15;
-SDS.formation.mean_age_factor = -1;
+SDS.formation.baseline_factor = log(1.2);
+SDS.formation.current_relations_factor = log(0.3);
+SDS.formation.age_difference_factor = -log(10)/50;
+SDS.formation.mean_age_factor = -log(5)/50;
 SDS.formation.preferred_age_difference = 4.5;
 % dissolution (baseline)
-SDS.dissolution.baseline_factor = -0.5;
+SDS.dissolution.baseline_factor = log(0.5);
 SDS.dissolution.mean_age_factor = 0;
-SDS.dissolution.age_difference_factor = 0.15;
-SDS.dissolution.current_relations_factor = -2;
+SDS.dissolution.age_difference_factor = 0;
+SDS.dissolution.current_relations_factor = 0;
 % conception
 % introduction
+SDS.HIV_introduction.number_of_introduced_HIV = 5;
 % transmission
 % MTCT
 % test
@@ -48,7 +49,7 @@ SDS.dissolution.current_relations_factor = -2;
 %
 SDS.age_mix.enable = 0;
 [SDS1,~]= spRun('start',SDS); 
-%
+%%
 SDS.age_mix.enable = 1;
 SDS.age_mix.age_difference_change = -3;
 SDS.age_mix.age_difference_factor_change = 0;

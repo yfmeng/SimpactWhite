@@ -146,7 +146,7 @@ msg = '';
 
 props.number_of_introduced_HIV=20;
 props.period_of_introduced_HIV = {'start' 'end'
-    0.1, 0.5};
+    2, 2.5};
 props.gender_ratio = 0.5;
 end
 

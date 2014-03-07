@@ -293,7 +293,7 @@ end
         probability = P.probability * P.probabilityChange(P0.male,P0.female);
         %loglogP =  log(-log(1- probability/100));
         loglogP = log(probability/100);
-        sexPerYear = P.weeksPerYear*P0.coitalFrequency(P0.male,P0.female)*(1-P0.condomUse(P0.male,P0.female)*P.infectiousness_decreased_by_condom);
+        sexPerYear = P.weeksPerYear*P0.coitalFrequency(P0.male,P0.females)*(1-P0.condomUse(P0.male,P0.females)*P.infectiousness_decreased_by_condom);
         P.alpha(P0.male, P0.female) = log(sexPerYear);
         a = P.alpha(P0.male, P0.female) + loglogP;       
         T = [timeHIVpos, P.t(2:end, idx)'+timeHIVpos];
@@ -388,7 +388,48 @@ end
 
 %% change
     function eventTransmission_change(SDS,P0,coverage,rate)
-        return
+        coverage = cell2mat(coverage);
+        rate = cell2mat(rate);
+        covered = rand(size(P.alpha,1),size(P.alpha,2))<coverage; 
+        index = find(P.eventTimes>0&~isinf(P.eventTimes)&covered);
+        for i = 1:length(index)
+            P0.index = index(i);
+            P0.male = rem(P0.index - 1, SDS.number_of_males) + 1;
+            P0.female = ceil(P0.index/SDS.number_of_males);
+             timeHIVpos = SDS.males.HIV_positive(P0.male);
+            idx = P0.male;
+        if isnan(timeHIVpos)
+            % female is HIV+
+            timeHIVpos = SDS.females.HIV_positive(P0.female);
+            idx = SDS.number_of_males + P0.female;
+            %circumcision = false;
+        end
+        probability = P.probability * P.probabilityChange(P0.male,P0.female);
+        %loglogP =  log(-log(1- probability/100));
+        loglogP = log(probability/100);
+        lastChange = P.lastChange(P0.male, P0.female);
+        T = [timeHIVpos, P.t(2:end, idx)'+timeHIVpos];
+        %         T = [timeHIVpos, P.t(2:end, idx)'];
+        %         T = cumsum(T);
+        relationID = intersect(find(SDS.relations.ID(:,1)==P0.male),find(SDS.relations.ID(:,2)==P0.female));
+        relationID = relationID(end);
+        Tformation = SDS.relations.time(relationID,1);
+        a = P.alpha(P0.male, P0.female) + loglogP;
+        P.rand(P0.male,P0.female) = P.rand(P0.male,P0.female) ...
+            - P.consumedRand(P0.now, Tformation, T, lastChange, a, P.beta);
+        sexPerYear = P.weeksPerYear*P0.coitalFrequency(P0.male,P0.females)*(1-P0.condomUse(P0.male,P0.females)*P.infectiousness_decreased_by_condom);
+        P.alpha(P0.male,P0.female) = log(sexPerYear*(1-rate)+...
+            sexPerYear*rate*(1-P.infectiousness_decreased_by_condom));
+        eventTransmission_update(SDS, P0)
+        end
+        index = find(covered);
+        for  i = 1:length(index);
+            P0.index = index(i);
+            P0.male = rem(P0.index - 1, SDS.number_of_males) + 1;
+            P0.female = ceil(P0.index/SDS.number_of_males);
+            sexPerYear = P.weeksPerYear*P0.coitalFrequency(P0.male,P0.female)*(1-P0.condomUse(P0.male,P0.female)*P.infectiousness_decreased_by_condom);   
+            P.alpha(P0.male,P0.female) = log(sexPerYear*(1-rate)+sexPerYear*rate*(1-P.infectiousness_decreased_by_condom));
+        end
     end
 %% setup
 

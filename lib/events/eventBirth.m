@@ -144,6 +144,8 @@ end
         
         P0.female = P0.index;
         P0.pregnant(P0.female) = false;
+        P0.motheredChildren(P0.female) = P0.motheredChildren(P0.female)+1;
+        P0.lastChild(P0.female) = P0.now;
         P0.subset = P.false;        % required by eventFormation_eventTimes
         P0.birth = true;
         P.blockANC(P0)

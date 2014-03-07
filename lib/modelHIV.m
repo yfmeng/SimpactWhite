@@ -241,6 +241,11 @@ end
         P0.fsw = SDS.females.sex_worker;
         P0.transactionSex = repmat(P0.fsw, SDS.number_of_males, 1);
         
+        P0.motheredChildren = zeros(1,SDS.number_of_females);
+        P0.lastChild = femalesNaN;
+        P0.contraception = falseMatrix;
+        P0.comdonUse = falseMatrix;
+        P0.coitalFrequency = falseMatrix;
         
         P0.maleAge = -repmat(SDS.males.born(:), 1, SDS.number_of_females);
         P0.femaleAge = -repmat(SDS.females.born(:)', SDS.number_of_males, 1);
@@ -265,10 +270,10 @@ end
         P0.intervened = falseMatrix;
         P0.communityDifference = cast(P0.maleCommunity - P0.femaleCommunity, SDS.float);
           
-        P0.current_relations_factorMax = max(P0.malecurrent_relations_factor,P0.femalecurrent_relations_factor);%
-        P0.current_relations_factorMin = min(P0.malecurrent_relations_factor,P0.femalecurrent_relations_factor);%
-        P0.current_relations_factorMean = (P0.malecurrent_relations_factor+P0.femalecurrent_relations_factor)./2;%
-        
+%         P0.current_relations_factorMax = max(P0.malecurrent_relations_factor,P0.femalecurrent_relations_factor);%
+%         P0.current_relations_factorMin = min(P0.malecurrent_relations_factor,P0.femalecurrent_relations_factor);%
+%         P0.current_relations_factorMean = (P0.malecurrent_relations_factor+P0.femalecurrent_relations_factor)./2;%
+%         
         P0.current = falseMatrix;
         P0.currentMSM = falseMatrixMSM;
         
