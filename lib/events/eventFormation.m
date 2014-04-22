@@ -37,21 +37,9 @@ end
         P.intExpLinear = spTools('handle', 'intExpLinear');
         P.fixFormation = spTools('handle','fixFormation3');
         [P.enableConception, thisMsg] = spTools('handle', 'eventConception', 'enable');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.enableDissolution, thisMsg] = spTools('handle', 'eventDissolution', 'enable');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.updateDissolution, thisMsg] = spTools('handle', 'eventDissolution', 'update');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.enableTransmission, thisMsg] = spTools('handle', 'eventTransmission', 'enable');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.updateTest, thisMsg] = spTools('handle', 'eventTest', 'update');
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
@@ -69,7 +57,7 @@ end
         P.age_difference_factor = event.age_difference_factor*ones(SDS.number_of_males, SDS.number_of_females, SDS.float);
         
         P.alpha = -inf(SDS.number_of_males, SDS.number_of_females, SDS.float);
-        P.beta = - P.mean_age_factor + P.last_change_factor;
+        P.beta = P.last_change_factor;
         P.beta = P.beta*ones(SDS.number_of_males, SDS.number_of_females, SDS.float);
         P.rand = Inf(SDS.number_of_males, SDS.number_of_females);
         P.time0 = zeros(SDS.number_of_males, SDS.number_of_females, SDS.float);
@@ -107,27 +95,16 @@ end
         
         P = X;
         P.expLinear = spTools('handle', 'expLinear');
+        P.rand0toInf = spTools('handle', 'rand0toInf');
+        P.expLinear = spTools('handle', 'expLinear');
         P.intExpLinear = spTools('handle', 'intExpLinear');
+        P.fixFormation = spTools('handle','fixFormation3');
         [P.enableConception, thisMsg] = spTools('handle', 'eventConception', 'enable');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.enableDissolution, thisMsg] = spTools('handle', 'eventDissolution', 'enable');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.updateDissolution, thisMsg] = spTools('handle', 'eventDissolution', 'update');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.enableTransmission, thisMsg] = spTools('handle', 'eventTransmission', 'enable');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.updateTest, thisMsg] = spTools('handle', 'eventTest', 'update');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
+        
         if P.beta == 0
             P.expLinear = spTools('handle', 'expConstant');
             P.intExpLinear = spTools('handle', 'intExpConstant');
@@ -162,9 +139,9 @@ end
         SDS.relations.time(P.relation, P.indexStartStop) = [P0.now, Inf];
         SDS.relations.proximity(P.relation) = P0.communityDifference(P0.male,P0.female);
         % temp
-        P0.coitalFrequency(P0.male,P0.female) = 2.5;
+        P0.coitalFrequency(P0.male,P0.female) = P.baseline_coital_frequency;
         P0.contraception(P0.male,P0.female) = 0.5;
-        P0.condomUse(P0.male,P0.female) = 0.3;
+        P0.condomUse(P0.male,P0.female) = P.basline_condom_use;
         P0.contraception(P0.male,P0.female) = max(P0.contraception(P0.male,P0.female),P0.condomUse(P0.male,P0.female));
         
         P.enableConception(SDS, P0)          % uses P0.male; P0.female
@@ -207,7 +184,9 @@ end
             P.current_relations_difference_factor*P0.relationCountDifference(P0.subset).*(~P0.transactionSex(P0.subset))+ ...
             P.female_current_relations_factor*subsetRelationsCount(P0.subset).*(~P0.transactionSex(P0.subset))+...
             P.mean_age_factor*(P0.meanAge(P0.subset) - P.age_limit) + ...
-            P.age_difference_factor(P0.subset).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
+            P.age_difference_factor(P0.subset).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset)))+...
+            P.male_age_difference_variation_factor.*abs(P0.maleAge(P0.subset)-P.max_difference_male_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
+            P.female_age_difference_variation_factor.*abs(P0.femaleAge(P0.subset)-P.max_difference_female_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
             P.transaction_sex_factor*P0.transactionSex(P0.subset) + ...
             P.community_difference_factor*abs(P0.communityDifference(P0.subset))+...
             P.MSM_factor*MSM(P0.subset);
@@ -219,7 +198,7 @@ end
         P0.subset(~P0.adultMales, :) = false;
         P0.subset(:,~P0.adultFemales) = false;
         
-         if P.fix_PTR%&&P0.now>=0.5
+         if P.fix_PTR
             subset0 = P0.adult&~P0.current&~P0.subset;
             subset1 = P0.adult&~P0.current;
             % consumed randomness
@@ -281,7 +260,9 @@ end
             P.current_relations_difference_factor*P0.relationCountDifference(P0.subset) .*(~P0.transactionSex(P0.subset))+ ...
             P.female_current_relations_factor*femaleRelationMatrix(P0.subset).*(~P0.transactionSex(P0.subset))+...
             P.mean_age_factor*(P0.meanAge(P0.subset) - P.age_limit) + ...
-            P.age_difference_factor(P0.subset).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
+            P.age_difference_factor(P0.subset).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset)))+...
+            P.male_age_difference_variation_factor.*abs(P0.maleAge(P0.subset)-P.max_difference_male_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
+            P.female_age_difference_variation_factor.*abs(P0.femaleAge(P0.subset)-P.max_difference_female_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
             P.transaction_sex_factor*P0.transactionSex(P0.subset) + ...
             P.community_difference_factor*abs(P0.communityDifference(P0.subset))+...
             P.MSM_factor*MSM(P0.subset);
@@ -319,9 +300,11 @@ end
         Pc = P.intExpLinear(P.alpha(P0.subset),P.beta(P0.subset),P.lastChange(P0.subset)-P.time0(P0.subset),P0.now-P.time0(P0.subset));                
         P.rand(P0.subset) = P.rand(P0.subset)-Pc;
         for i = 1:length(names)
+            if values(i)~=0
             temp = P.(names{i});
             temp(P0.subset) = temp(P0.subset) + values(i);
             P.(names{i}) = temp;
+            end
         end
         femaleRelationMatrix = repmat(P0.femaleRelationCount, size(P0.current,1), 1);
         MSM = repmat(P0.MSM',1, size(P0.subset, 2));
@@ -335,7 +318,9 @@ end
             P.current_relations_difference_factor*P0.relationCountDifference(P0.subset) .*(~P0.transactionSex(P0.subset))+ ...
             P.female_current_relations_factor*femaleRelationMatrix(P0.subset).*(~P0.transactionSex(P0.subset))+...
             P.mean_age_factor*(P0.meanAge(P0.subset) - P.age_limit) + ...
-            P.age_difference_factor(P0.subset).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
+            P.age_difference_factor(P0.subset).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset)))+...
+            P.male_age_difference_variation_factor.*abs(P0.maleAge(P0.subset)-P.max_difference_male_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
+            P.female_age_difference_variation_factor.*abs(P0.femaleAge(P0.subset)-P.max_difference_female_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
             P.transaction_sex_factor*P0.transactionSex(P0.subset) + ...
             P.community_difference_factor*abs(P0.communityDifference(P0.subset))+...
             P.MSM_factor*MSM(P0.subset);
@@ -348,7 +333,6 @@ end
         P.eventTimes(~P0.adultMales,:) = Inf;
         P.eventTimes(:,~P0.adultFemales) = Inf;
     end
-
 %% block
     function eventFormation_block(P0)
         
@@ -379,16 +363,21 @@ props.current_relations_difference_factor =log(0.8);
 props.individual_behavioural_factor = 0;
 props.behavioural_change_factor = 0;    % The effect of relations becomes larger during BCC;
 props.mean_age_factor = -log(5)/50; %-log(hazard ration)/(age2-age1);
-props.last_change_factor =-log(1.3);% log(1);         % NOTE: intHazard = Inf for d = -c !!!
+props.last_change_factor =log(0.99);% log(1);         % NOTE: intHazard = Inf for d = -c !!!
 props.age_limit = 15;                 % no couple formation below this age
 props.age_difference_factor = log(0.7);
 props.preferred_age_difference = 4.5;
+props.max_difference_male_age = 30;
+props.male_age_difference_variation_factor = log(0.9);
+props.max_difference_female_age = 30;
+props.female_age_difference_variation_factor = log(0.9);
 props.community_difference_factor =0;% log();
 props.transaction_sex_factor =0;% log(3);
 props.MSM_factor = log(1);
 props.fix_turn_over_rate = 0;
-props.warm_up_period = 1;
 props.turn_over_rate = 0.1;
+props.baseline_coital_frequency = 2.5;
+props.basline_condom_use = 0.3;
 end
 
 

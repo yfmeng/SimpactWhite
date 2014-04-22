@@ -72,9 +72,20 @@ end
         
         P = X;
         P.enable = SDS.FSW.enable;
-        [P.updateFormation, msg] = spTools('handle', 'eventFormation', 'update');
+         [P.updateFormation, msg] = spTools('handle', 'eventFormation', 'update');
         [P.updateDissolution, msg] = spTools('handle', 'eventDissolution', 'update');
-    end
+        P.rand0toInf = spTools('handle', 'rand0toInf');
+        P.expLinear = spTools('handle', 'expLinear');
+        P.intExpLinear = spTools('handle', 'intExpLinear');
+        P.expLinearStop = spTools('handle', 'expLinear');
+        if P.beta == 0
+            P.expLinear = spTools('handle', 'expConstant');
+            P.intExpLinear = spTools('handle', 'intExpConstant');
+        end
+        if P.betaStop == 0
+            P.expLinearStop = spTools('handle', 'expConstant');
+        end
+     end
 
 %% eventTimes
     function eventTimes = eventFSW_eventTimes(~, ~)

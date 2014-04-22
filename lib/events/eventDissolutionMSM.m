@@ -78,7 +78,7 @@ end
         msg = '';
         
         P = X;
-        P.enable = SDS.dissolutionMSM.enable;
+        P.enable = SDS.dissolution_MSM.enable;
         P.rand0toInf = spTools('handle', 'rand0toInf');
         P.expLinear = spTools('handle', 'expLinear');
         P.intExpLinear = spTools('handle', 'intExpLinear');

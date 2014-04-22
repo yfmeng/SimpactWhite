@@ -24,12 +24,7 @@ end
         
         P = event;                  % copy event parameters
         P.alpha = -Inf(1, elements);
-        
-        
-        
         P.baselineAlpha = event.test_time{2,1};
-        
-        
         P.agePeak = event.test_time{2,2};
         P.ageFactor = event.test_time{2,4};
         P.ageWeibull = zeros(1, elements, SDS.float);
@@ -63,7 +58,7 @@ end
         P.longterm_relationship_threshold = event.longterm_relationship_threshold;
         P.beta0 = event.test_time{2, 7};
         P.rand0toInf = spTools('rand0toInf', 1, elements);
-        P.rand = P.rand0toInf;
+        
         P.expLinear = spTools('handle', 'expLinear');
         P.intExpLinear = spTools('handle', 'intExpLinear');
         P.expConstant = spTools('handle' , 'expConstant');
@@ -74,6 +69,7 @@ end
         [P.fireARV, msg] = spTools('handle', 'eventARV', 'fire');
         [P.setupTransmission] = spTools('handle','eventTransmission','setup');
         [P.updateTransmission, msg] = spTools('handle', 'eventTransmission', 'update');
+        P.rand = P.rand0toInf;
         P.lastChange = zeros(1, elements, SDS.float);
         
         P.tests = find(SDS.tests.ID, 1, 'last');
@@ -95,11 +91,13 @@ end
         
         P = X;
         P.rand0toInf = spTools('rand0toInf', 1, elements);
+        
         P.expLinear = spTools('handle', 'expLinear');
         P.intExpLinear = spTools('handle', 'intExpLinear');
         P.expConstant = spTools('handle' , 'expConstant');
         P.intExpConstant = spTools('handle' , 'intExpConstant');
         P.weibullEventTime = spTools('handle','weibullEventTime');
+        P.eventTimes = inf(1, elements, SDS.float);
         [P.enableARV, msg] = spTools('handle', 'eventARV', 'enable');
         [P.fireARV, msg] = spTools('handle', 'eventARV', 'fire');
         [P.setupTransmission] = spTools('handle','eventTransmission','setup');
@@ -283,6 +281,9 @@ end
 %         alpha= P.baselineAlpha + ageFactor';
 %         P.eventTimes(P0.index) = P.expLinear(alpha, P.beta0,0, P.rand(P0.index));
 P.eventTimes(P0.index) = rand;
+if rand>=P.testing_coverage/100
+    P.eventTimes(P0.index) = Inf;
+end
     end
 
 
@@ -382,11 +383,12 @@ props.test_time = {
 
 props.CD4_baseline_for_ARV = {
    'variables'                  'CD4 threshold' 'current time' 'current accessability' 'target time' 'target accessability' 
-    'population'                350                   '31-Dec-2013'             60              '30-Jun-2022'               65
+    'population'                350                   '31-Dec-2013'             65              '30-Jun-2020'               90
   %  'expansion group'      350                   '31-Dec-2012'             40              '30-Jun-2015'               40
     };
+props.testing_coverage = 86;
 props.option_B_coverage = 95;
-props.monitoring_frequency = 1;
+props.monitoring_frequency = 3;
 props.longterm_relationship_threshold = 0.25;
 msg = 'HIV testing implemented by test event.';
 end

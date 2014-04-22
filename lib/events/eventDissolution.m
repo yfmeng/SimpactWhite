@@ -36,17 +36,8 @@ end
         P.intExpLinear = spTools('handle', 'intExpLinear');
         [P.updateFormation, thisMsg] = spTools('handle', 'eventFormation', 'update');
         [P.enableFormation, thisMsg] = spTools('handle', 'eventFormation', 'enable');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.blockConception, thisMsg] = spTools('handle', 'eventConception', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.blockTransmission, thisMsg] = spTools('handle', 'eventTransmission', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.updateTest, thisMsg] = spTools('handle', 'eventTest', 'update');
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
@@ -86,22 +77,9 @@ end
         P.intExpLinear = spTools('handle', 'intExpLinear');
         [P.updateFormation, thisMsg] = spTools('handle', 'eventFormation', 'update');
         [P.enableFormation, thisMsg] = spTools('handle', 'eventFormation', 'enable');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.blockConception, thisMsg] = spTools('handle', 'eventConception', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.blockTransmission, thisMsg] = spTools('handle', 'eventTransmission', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.updateTest, thisMsg] = spTools('handle', 'eventTest', 'update');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
-        
         
         % ******* Checks *******
         if P.beta == 0

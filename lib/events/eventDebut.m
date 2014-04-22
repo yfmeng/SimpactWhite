@@ -54,7 +54,7 @@ end
 %% restore
     function [elements,msg] = eventDebut_restore(SDS,X)
 
-        elements = SDS.number_of_females;
+        elements = SDS.number_of_males+ SDS.number_of_females;
         msg = '';
         
     	P = X;
@@ -137,7 +137,7 @@ end
         if ~P.enable
             return
         end       
-        P.eventTimes(index) = P.debut;
+        P.eventTimes(index) = P.debut+normrnd(0,1,1,1);
     end
 %% intervene
     function eventDebut_intervene(P0,names,values,start)

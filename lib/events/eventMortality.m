@@ -39,39 +39,13 @@ end
         P.weibullEventTime = spTools('handle', 'weibullEventTime');
         %[P.blockFormation, thisMsg] = spTools('handle', 'eventFormation', 'block');
         [P.blockFormation, thisMsg] = spTools('handle', 'eventFormation', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.dumpDissolution, thisMsg] = spTools('handle', 'eventDissolution', 'dump');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.abortBirth, thisMsg] = spTools('handle', 'eventBirth', 'abort');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.blockAIDSmortality, thisMsg] = spTools('handle', 'eventAIDSmortality', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.blockCircumcision, thisMsg] = spTools('handle', 'eventCircumcision', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.blockARV, thisMsg] = spTools('handle', 'eventARV', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.blockARVstop, thisMsg] = spTools('handle', 'eventARVstop', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
-        %??? P.blockTransmission(P0)             % row or column
-        
          [P.blockTest, thisMsg] = spTools('handle', 'eventTest', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
          [P.blockANC, thisMsg] = spTools('handle', 'eventANC', 'block');
          [P.blockMTCT, thisMsg] = spTools('handle', 'eventMTCT', 'block');
          [P.blockIntroduction, thisMsg] = spTools('handle', 'eventIntroduction', 'block');
@@ -118,52 +92,17 @@ end
         
 	P = X;
 	P.enable = SDS.non_AIDS_mortality.enable;
-        P.weibull = spTools('handle', 'weibull');
-        P.weibullEventTime = spTools('handle', 'weibullEventTime');
-        %[P.blockFormation, thisMsg] = spTools('handle', 'eventFormation', 'block');
-        [P.blockFormation, thisMsg] = spTools('handle', 'eventFormation', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
+       [P.blockFormation, thisMsg] = spTools('handle', 'eventFormation', 'block');
         [P.dumpDissolution, thisMsg] = spTools('handle', 'eventDissolution', 'dump');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.abortBirth, thisMsg] = spTools('handle', 'eventBirth', 'abort');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.blockAIDSmortality, thisMsg] = spTools('handle', 'eventAIDSmortality', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.blockCircumcision, thisMsg] = spTools('handle', 'eventCircumcision', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.blockARV, thisMsg] = spTools('handle', 'eventARV', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
         [P.blockARVstop, thisMsg] = spTools('handle', 'eventARVstop', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
-        %??? P.blockTransmission(P0)             % row or column
-        
          [P.blockTest, thisMsg] = spTools('handle', 'eventTest', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
          [P.blockANC, thisMsg] = spTools('handle', 'eventANC', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
-        [P.blockMTCT, thisMsg] = spTools('handle', 'eventMTCT', 'block');
-        if ~isempty(thisMsg)
-            msg = sprintf('%s%s\n', msg, thisMsg);
-        end
-        [P.blockIntroduction, thisMsg] = spTools('handle', 'eventIntroduction', 'block');
+         [P.blockMTCT, thisMsg] = spTools('handle', 'eventMTCT', 'block');
+         [P.blockIntroduction, thisMsg] = spTools('handle', 'eventIntroduction', 'block');
          [P.abolishTransmission, thisMsg] = spTools('handle', 'eventTransmission', 'abolish');
          [P.blockDebut, thisMsg] = spTools('handle', 'eventDebut', 'block');
     end
@@ -264,6 +203,9 @@ end
         
         t = P.weibullEventTime(...
             P.scale(P0.index), P.shape(P0.index), P.rand(P0.index), 0);
+        if rand(1,1)<=P.infant_death_rate
+            t = min(5,P.weibullEventTime(2,2,1,1));
+        end
         P.eventTimes(P0.index) = t;
         
     end
@@ -282,8 +224,9 @@ function [props, msg] = eventMortality_properties
 
 msg = '';
 props.mortality_reference_year = 1980;
-props.Weibull_shape_parameter = 4;
-props.Weibull_scale_parameter = 70;
-props.gender_difference = 5;
+props.Weibull_shape_parameter = 3;
+props.Weibull_scale_parameter = 55;
+props.gender_difference = 0;
+props.infant_death_rate = 0.05;
 end
 

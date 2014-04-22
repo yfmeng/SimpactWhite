@@ -48,11 +48,8 @@ end
     function [elements,msg] = eventANC_restore(SDS,X)
         
         elements = SDS.number_of_females;
-        msg = '';
-        
-        
-        P = X;
-        
+        msg = '';     
+        P = X;        
         P.enable = SDS.antenatal_care.enable;
         [P.fireTest, msg] = spTools('handle', 'eventTest', 'fire');
     end

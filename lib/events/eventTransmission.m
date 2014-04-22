@@ -37,7 +37,9 @@ end
         [P.fireTest, msg] = spTools('handle', 'eventTest', 'fire');
         [P.enableMTCT, msg] = spTools('handle', 'eventMTCT', 'enable');
         [P.enableTransmissionMSM, msg] = spTools('handle', 'eventTransmissionMSM', 'enable');
-        
+        P.CD4Interp = spTools('handle','CD4Interp');
+        P.consumedRand = spTools('handle','consumedRand');
+        P.transmissionTime = spTools('handle','transmissionTime');        
         % ******* Variables & Constants *******
         P.rand = spTools('rand0toInf', SDS.number_of_males, SDS.number_of_females);
         
@@ -46,9 +48,7 @@ end
         P.ARVeffect = 1- event.infectiousness_decreased_by_ARV;
         P.probabilityChange = ones(SDS.number_of_males, SDS.number_of_females);
         P.eventTimes = inf(SDS.number_of_males, SDS.number_of_females, SDS.float);
-        P.CD4Interp = spTools('handle','CD4Interp');
-        P.consumedRand = spTools('handle','consumedRand');
-        P.transmissionTime = spTools('handle','transmissionTime');
+
         varWeibull = event.AIDS_mortality_distribution{2, 1};
         P.shape = event.AIDS_mortality_distribution{2, 2};
         P.scale = event.AIDS_mortality_distribution{2, 3};
@@ -70,21 +70,17 @@ end
             {varWeibull, ''}
             ];
         debugState = false;
-        if isme
-            debugState = he('-debug');
-        end
-        if debugState
-            he('-debug')
-        end
+%         if isme
+%             debugState = he('-debug');
+%         end
+%         if debugState
+%             he('-debug')
+%        end
         tic
         for ii = 1 : infections
             P.algebraicSystem{4, 2} = sprintf('%g', P.timeDeath(ii));
             P.algebraicSystem = solvesys(P.algebraicSystem);
             P.t(:, ii) = [P.algebraicSystem{:, 3}]';
-        end
-        %toc    % ~1/200 sec/infection
-        if debugState
-            he('-debug')
         end
         
         % ******* Integrated Hazards for Entire Population *******
@@ -115,15 +111,14 @@ end
         
         [P.enableAIDSmortality, msg] = spTools('handle', 'eventAIDSmortality', 'enable');
         [P.enableTest, msg] = spTools('handle', 'eventTest', 'enable');
+        [P.enableARV, msg] = spTools('handle', 'eventARV', 'enable');
         [P.fireTest, msg] = spTools('handle', 'eventTest', 'fire');
         [P.enableMTCT, msg] = spTools('handle', 'eventMTCT', 'enable');
         [P.enableTransmissionMSM, msg] = spTools('handle', 'eventTransmissionMSM', 'enable');
-        
-        % ******* Variables & Constants *******
-        P.rand = spTools('rand0toInf', SDS.number_of_males, SDS.number_of_females);
         P.CD4Interp = spTools('handle','CD4Interp');
         P.consumedRand = spTools('handle','consumedRand');
-        P.transmissionTime = spTools('handle','transmissionTime');
+        P.transmissionTime = spTools('handle','transmissionTime');        
+        
     end
 
 %% eventTimes

@@ -32,8 +32,6 @@ end
         % ******* Function Handles *******
         P.weibullEventTime = spTools('handle', 'weibullEventTime');
         [P.enableAIDSmortality, thisMsg] = spTools('handle', 'AIDSmortality', 'enable');
-       % [P.fireTest, thisMsg] = spTools('handle', 'Test', 'fire');
-        
         % ******* Variables & Constants *******
         P.randBreastfeeding = rand(1, SDS.number_of_females);
         P.rand = rand(1,elements);
@@ -78,7 +76,7 @@ end
         % ******* Function Handles *******
         P.weibullEventTime = spTools('handle', 'weibullEventTime');
         [P.enableAIDSmortality, thisMsg] = spTools('handle', 'AIDSmortality', 'enable');
-        [P.fireTest, thisMsg] = spTools('handle', 'Test', 'fire');
+        [P.fireTest, thisMsg] = spTools('handle', 'eventTest', 'fire');
     end
 
 %% eventTime

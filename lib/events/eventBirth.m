@@ -89,11 +89,9 @@ end
 	P = X;
 	P.enable = SDS.birth.enable;
         
-        empiricalCommunity = spTools('handle', 'empiricalCommunity');
-        empiricalCRF = spTools('handle', 'empiricalCRF');        
         P.rand0toInf = spTools('handle', 'rand0toInf');
         P.weibull = spTools('handle', 'weibull');
-        %[P.enableFormation, thisMsg] = spTools('handle', 'eventFormation', 'enable');
+        
         [P.enableFormation, thisMsg] = spTools('handle', 'eventFormation', 'enable');
         if ~isempty(thisMsg)
             msg = sprintf('%s%s\n', msg, thisMsg);
@@ -119,6 +117,8 @@ end
             msg = sprintf('%s%s\n', msg, thisMsg);
         end
          [P.blockANC, thisMsg] = spTools('handle', 'eventANC', 'block');
+         [P.enableDebut, thisMsg] = spTools('handle', 'eventDebut', 'enable');
+        
     end
 
 %% eventTime

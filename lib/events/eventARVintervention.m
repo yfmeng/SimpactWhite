@@ -49,7 +49,7 @@ end
         elements = size(X.ARV_expansion_strategies,1)-1;
         msg = '';       
         P = X;
-        [P.interveneTest, msg] = spTools('handle', 'eventTest', 'intervene');        
+        [P.interveneTest, msg] = spTools('handle', 'eventTest', 'intervene');
     end
 
 %% eventTimes

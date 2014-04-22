@@ -57,6 +57,7 @@ end
         msg = '';
         P = X;
         P.weibullEventTime = spTools('handle','weibullEventTime');
+        P.CD4Interp = spTools('handle','CD4Interp');
         [P.updateTransmission, msg] = spTools('handle', 'eventTransmission', 'update');
         [P.updateMTCT, msg] = spTools('handle', 'eventMTCT', 'update');
         [P.enableTest, msg] = spTools('handle', 'eventTest', 'enable');

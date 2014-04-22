@@ -94,18 +94,10 @@ end
         MSM = sum(SDS.males.MSM);
         falseMatrixMSM = false(MSM,MSM);
         P0.subsetMSM = falseMatrixMSM;
-        
-        maleRange = 1:SDS.initial_number_of_males;
-        femaleRange = 1:SDS.initial_number_of_females;
-        
-        ageMale = empiricalAge(SDS.initial_number_of_males, 'man',SDS.age_file);
-        ageFemale = empiricalAge(SDS.initial_number_of_females, 'woman',SDS.age_file);
-        %temp
-        ageMale = wblrnd(32,1.5,1,SDS.initial_number_of_males);
-        ageFemale = wblrnd(30,1.5,1,SDS.initial_number_of_females);
-        SDS.males.born(maleRange) = cast(-ageMale, SDS.float);    % -years old
-        SDS.females.born(femaleRange) = cast(-ageFemale, SDS.float);% -years old
-%        
+         
+        SDS.males.born(1:SDS.initial_number_of_males) = -ageCast('m',SDS.initial_number_of_males);
+        SDS.females.born(1:SDS.initial_number_of_females) = -ageCast('f',SDS.initial_number_of_females); 
+
         % ******* Communities TEMP!!! *******
         
         communityMale = empiricalCommunity(SDS.initial_number_of_males, SDS.number_of_community_members);
@@ -373,7 +365,7 @@ end
         end
         P0.event = rmfield(P0.event,'P');
         SDS.start_date = SDS.end_date;
-        SDS.end_date = '31-Dec-2032';
+        SDS.end_date = '31-Dec-2030';
     end
 
 %% nextEvent
@@ -486,7 +478,7 @@ SDS.number_of_females = 5;
 SDS.initial_number_of_males = 5;
 SDS.initial_number_of_females = 5;
 SDS.percentage_of_MSM = 50;
-SDS.number_of_community_members = floor(SDS.initial_number_of_males/2); % 4 communities
+SDS.number_of_community_members = 500;
 SDS.number_of_relations = SDS.number_of_males*SDS.number_of_females;
 SDS.number_of_tests =  (SDS.number_of_males+SDS.number_of_females);
 SDS.number_of_ARV = (SDS.number_of_males+SDS.number_of_females)*0.3;

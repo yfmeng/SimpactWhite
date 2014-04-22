@@ -32,11 +32,6 @@ end
         % ******* Function Handles *******
         P.rand0toInf = spTools('handle', 'rand0toInf');
         [P.updateTransmission, msg] = spTools('handle', 'eventTransmission', 'update');
-        % [P.updateTransmission, thisMsg] = ...
-        %     spTools('handle', 'eventTransmission', 'update');
-        % if ~isempty(thisMsg)
-        %     msg = sprintf('%s%s\n', msg, thisMsg);
-        % end
         
         daysPerYear = spTools('daysPerYear');
         
@@ -62,33 +57,6 @@ end
             P.t2
             P.t3
             ]);
-        
-        % H1 = zeros(numel(P.t1), elements);
-        % H2 = zeros(numel(P.t2), elements);
-        % H3 = zeros(numel(P.t3), elements);
-        % for ii = 1 : SDS.initial_number_of_males
-        %     H1(:,ii) = (atan((P.t1 - P.tp - tb(ii))/P.gamma) + ...
-        %         atan(P.tp/P.gamma))/pi;
-        %
-        %     C2 = H1(end,ii) - (P.gamma/2*(P.x - 1)/P.Dtr*...
-        %         log((P.tr - P.tp - tb(ii))^2 + P.gamma^2) + ...
-        %         ((P.x - 1)/P.Dtr*(P.tr + P.tp + tb(ii)) + 1)*...
-        %         atan((P.tr - P.tp - tb(ii))/P.gamma))/pi;
-        %     H2(:,ii) = (P.gamma/2*(P.x - 1)/P.Dtr*...
-        %         log((P.t2 - P.tp - tb(ii)).^2 + P.gamma^2) + ...
-        %         ((P.x - 1)/P.Dtr*(P.tr + P.tp + tb(ii)) + 1)*...
-        %         atan((P.t2 - P.tp - tb(ii))/P.gamma))/pi + C2;
-        %
-        %     C3 = H2(end,ii) - atan((P.tr + P.Dtr - P.tp - tb(ii))/P.gamma)*P.x/pi;
-        %     H3(:,ii) = atan((P.t3 - P.tp - tb(ii))/P.gamma)*P.x/pi + C3;
-        % end
-        % H = [
-        %     H1
-        %     H2
-        %     H3
-        %     ];
-        % H = H(P.idx,:);       % discard duplicate values
-        
         
         % ******* Variables & Constants *******
         P.rand = rand(1, elements, SDS.float);

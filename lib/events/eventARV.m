@@ -28,7 +28,6 @@ end
         [P.setupTransmission, msg] = spTools('handle', 'eventTransmission', 'setup');
         [P.updateTransmission, msg] = spTools('handle', 'eventTransmission', 'update');
         [P.updateMTCT, msg] = spTools('handle', 'eventMTCT', 'update');
-
         [P.enableAIDSmortality, msg] = spTools('handle', 'eventAIDSmortality', 'enable');
         [P.enableARVstop, msg] = spTools('handle', 'eventARVstop', 'enable');
         P.scale = P.lifetime_extension_by_ARV{2,1};
@@ -59,10 +58,11 @@ end
         [P.setupTransmission, msg] = spTools('handle', 'eventTransmission', 'setup');
         [P.updateTransmission, msg] = spTools('handle', 'eventTransmission', 'update');
         [P.updateMTCT, msg] = spTools('handle', 'eventMTCT', 'update');
-
         [P.enableAIDSmortality, msg] = spTools('handle', 'eventAIDSmortality', 'enable');
         [P.enableARVstop, msg] = spTools('handle', 'eventARVstop', 'enable');
         P.weibullEventTime = spTools('handle','weibullEventTime');
+        P.CD4Interp = spTools('handle','CD4Interp');
+        
     end
 %% eventTimes
     function eventTimes = eventARV_eventTimes(~, ~)
@@ -220,7 +220,7 @@ props.ARV_program_start_time = 10;
 props.average_delay_after_AIDS = 1/12;
 props.lifetime_extension_by_ARV = {
 'scale factor' 'shape'
-2                  4
+2.5                  4
 };
 msg = 'Treatment implemented by ARV event.';
 end

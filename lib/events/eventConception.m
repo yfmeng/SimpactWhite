@@ -52,7 +52,13 @@ end
         
         P = X;
         P.enable = SDS.conception.enable;
-        P.readFertility = spTools('handle','readFertility');
+        P.expLinear = spTools('handle','expLinear');
+        if P.beta ==0
+            P.expLinear = spTools('handle','expConstant');
+        end
+        P.weeksPerYear = spTools('daysPerYear')/7;
+        P.rand0toInf = spTools('handle', 'rand0toInf');
+        %P.enableBirth = eventBirth('handle', 'enable');
         [P.enableBirth, msg] = spTools('handle', 'eventBirth', 'enable');
         [P.enableANC, msg] = spTools('handle', 'eventANC', 'enable');
         [P.updateTransmission, msg] = spTools('handle', 'eventTransmission', 'update');
