@@ -65,10 +65,7 @@ end
     end
 
 %% eventTimes
-    function eventTimes = eventConception_eventTimes(~, ~)
-        
-        %subset = P0.subset & P0.current;    % what about relations braking up?
-        
+    function eventTimes = eventConception_eventTimes(~, ~)       
         eventTimes = P.eventTimes;
     end
 
@@ -86,8 +83,6 @@ end
         
         P0.male = rem(P0.index - 1, SDS.number_of_males) + 1;
         P0.female = ceil(P0.index/SDS.number_of_males);
-        
-        
         
         P0.pregnant(P0.female) = true;
         P.enableBirth(P0)                   % uses P0.male, P0.female
@@ -120,20 +115,19 @@ end
         if ~P.enable||P0.pregnant(P0.female)||motherAge>P.female_age_limit
             return
         end
-        alpha = log(P0.coitalFrequency(P0.male,P0.female)*P.weeksPerYear)...
-            +P.female_age_factor*motherAge...
-            +P.previous_children_factor*P0.motheredChildren(P0.female)...
-            +P.contraception_effect*P0.contraception(P0.male,P0.female);
+        riskySexFactor = log(SDS.risky_sex.baseline*P.weeksPerYear)+...
+            SDS.risky_sex.female_age_factor*(P0.femaleAge(P0.male,P0.female)-15)+...
+            SDS.risky_sex.mean_age_factor*(P0.meanAge(P0.male,P0.female)-15)+...
+            SDS.risky_sex.age_difference_factor*abs(P0.ageDifference(P0.male,P0.female))+...
+            SDS.risky_sex.children_factor*P0.motheredChildren(P0.female);
+        alpha = riskySexFactor+P.baseline_factor;
         P.eventTimes(P0.male,P0.female) = P.expLinear(alpha,P.beta,0,P.rand0toInf(1,1));
 
     end
 
 
 %% block
-    function eventConception_block(P0)
-        % Invoked by eventDissolution_dump
-        % Invoked by eventConception_fire
-        
+    function eventConception_block(P0)        
         P.eventTimes(P0.male, P0.female) = Inf;
     end
 end
@@ -142,11 +136,8 @@ end
 %% properties
 function [props, msg] = eventConception_properties
 props.baseline_factor = 0.5;
-props.female_age_factor = -0.2;
-props.contraception_effect = -0.5;
-props.previous_children_factor = -0.5;
-props.time_factor = 0.1;
 props.female_age_limit = 50;
+props.time_factor = log(0.9);
 msg = 'Birth implemented by birth event.';
 end
 

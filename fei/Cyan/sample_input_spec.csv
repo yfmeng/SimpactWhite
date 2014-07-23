@@ -1,0 +1,4 @@
+Scenario ID,population.nummen,population.numwomen,population.simtime,logsystem.filename.events
+5_years,*,*,5,evtlog%ID.csv
+popsize_400,200,200,*,*
+

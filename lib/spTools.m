@@ -48,103 +48,103 @@ end
 
 
 %% menu
-    function modelMenu = spTools_menu(handlesFcn)
-        
-        import java.awt.event.ActionEvent
-        import java.awt.event.KeyEvent
-        import javax.swing.JMenu
-        import javax.swing.JMenuItem
-        import javax.swing.KeyStroke
-        
-        modelMenu = JMenu('Tools');
-        modelMenu.setMnemonic(KeyEvent.VK_T)
-        
-        menuItem = JMenuItem('Population Inspector', KeyEvent.VK_P);
-        %WIP menuItem.setToolTipText('Create the initial population')
-        jset(menuItem, 'ActionPerformedCallback', @spTools_menu_callback)
-        modelMenu.add(menuItem);
-        
-        menuItem = JMenuItem('Relations Inspector', KeyEvent.VK_R);
-        jset(menuItem, 'ActionPerformedCallback', @spTools_menu_callback)
-        %WIP modelMenu.add(menuItem);
-        
-        modelMenu.addSeparator()
-        
-        emMenu = JMenu('Export Matrix');
-        emMenu.setToolTipText('Export matrix for post-processing in R')
-        emMenu.setMnemonic(KeyEvent.VK_M)
-        
-        menuItem = JMenuItem('CSV', KeyEvent.VK_C);
-        menuItem.setToolTipText('Export matrix in comma separated values format')
-        jset(menuItem, 'ActionPerformedCallback', @spTools_menu_callback)
-        emMenu.add(menuItem);
-        
-        menuItem = JMenuItem('NetCDF', KeyEvent.VK_N);
-        menuItem.setToolTipText('Export matrix in network common data format')
-        jset(menuItem, 'ActionPerformedCallback', @spTools_menu_callback)
-        emMenu.add(menuItem);
-        
-        modelMenu.add(emMenu);
-        
-        %modelMenu.addSeparator()
-        
-        %menuItem.setDisplayedMnemonicIndex(5)
-        %menuItem.setToolTipText('')
-        
-        
-        %% menu_callback
-        function spTools_menu_callback(~, actionEvent)
-            
-            handles = handlesFcn();
-            SDS = handles.data();
-            handles.state('busy')
-            
-            try
-                command = get(actionEvent, 'ActionCommand');
-                switch command
-                    case 'Population Inspector'
-                        [ok, msg] = popGui(handles);
-                        if ~ok
-                            handles.fail(msg)
-                        end
-                        
-                    case 'Relations Inspector'
-                        [ok, msg] = relGui(handles);
-                        if ~ok
-                            handles.fail(msg)
-                        end
-                        
-                    case 'CSV'
-                        handles.msg('Exporting to CSV... ')
-                        [ok, msg] = spTools_exportCSV(SDS);
-                        if ~ok
-                            handles.fail(msg)
-                            return
-                        end
-                        handles.msg('ok\n%s\n', msg)
-                        
-                    case 'WIP NetCDF'
-                        handles.msg('Exporting to NetCDF... ')
-                        [ok, msg] = spTools_exportNetCDF(SDS);
-                        if ~ok
-                            handles.fail(msg)
-                            return
-                        end
-                        handles.msg('ok\n')
-                        
-                    otherwise
-                        handles.fail('Warning: %s not implemented yet.', command)
-                        return
-                end
-                
-            catch Exception
-                handles.fail(Exception)
-                return
-            end
-            
-            handles.state('ready')
-        end
-    end
+%     function modelMenu = spTools_menu(handlesFcn)
+%         
+%         import java.awt.event.ActionEvent
+%         import java.awt.event.KeyEvent
+%         import javax.swing.JMenu
+%         import javax.swing.JMenuItem
+%         import javax.swing.KeyStroke
+%         
+%         modelMenu = JMenu('Tools');
+%         modelMenu.setMnemonic(KeyEvent.VK_T)
+%         
+%         menuItem = JMenuItem('Population Inspector', KeyEvent.VK_P);
+%         %WIP menuItem.setToolTipText('Create the initial population')
+%         jset(menuItem, 'ActionPerformedCallback', @spTools_menu_callback)
+%         modelMenu.add(menuItem);
+%         
+%         menuItem = JMenuItem('Relations Inspector', KeyEvent.VK_R);
+%         jset(menuItem, 'ActionPerformedCallback', @spTools_menu_callback)
+%         %WIP modelMenu.add(menuItem);
+%         
+%         modelMenu.addSeparator()
+%         
+%         emMenu = JMenu('Export Matrix');
+%         emMenu.setToolTipText('Export matrix for post-processing in R')
+%         emMenu.setMnemonic(KeyEvent.VK_M)
+%         
+%         menuItem = JMenuItem('CSV', KeyEvent.VK_C);
+%         menuItem.setToolTipText('Export matrix in comma separated values format')
+%         jset(menuItem, 'ActionPerformedCallback', @spTools_menu_callback)
+%         emMenu.add(menuItem);
+%         
+%         menuItem = JMenuItem('NetCDF', KeyEvent.VK_N);
+%         menuItem.setToolTipText('Export matrix in network common data format')
+%         jset(menuItem, 'ActionPerformedCallback', @spTools_menu_callback)
+%         emMenu.add(menuItem);
+%         
+%         modelMenu.add(emMenu);
+%         
+%         %modelMenu.addSeparator()
+%         
+%         %menuItem.setDisplayedMnemonicIndex(5)
+%         %menuItem.setToolTipText('')
+%         
+%         
+%         %% menu_callback
+%         function spTools_menu_callback(~, actionEvent)
+%             
+%             handles = handlesFcn();
+%             SDS = handles.data();
+%             handles.state('busy')
+%             
+%             try
+%                 command = get(actionEvent, 'ActionCommand');
+%                 switch command
+% %                     case 'Population Inspector'
+% %                         [ok, msg] = popGui(handles);
+% %                         if ~ok
+% %                             handles.fail(msg)
+% %                         end
+% %                         
+% %                     case 'Relations Inspector'
+% %                         [ok, msg] = relGui(handles);
+% %                         if ~ok
+% %                             handles.fail(msg)
+% %                         end
+% %                         
+% %                     case 'CSV'
+% %                         handles.msg('Exporting to CSV... ')
+% %                         [ok, msg] = spTools_exportCSV(SDS);
+% %                         if ~ok
+% %                             handles.fail(msg)
+% %                             return
+% %                         end
+% %                         handles.msg('ok\n%s\n', msg)
+% %                         
+% %                     case 'WIP NetCDF'
+% %                         handles.msg('Exporting to NetCDF... ')
+% %                         [ok, msg] = spTools_exportNetCDF(SDS);
+% %                         if ~ok
+% %                             handles.fail(msg)
+% %                             return
+% %                         end
+% %                         handles.msg('ok\n')
+% %                         
+% %                     otherwise
+% %                         handles.fail('Warning: %s not implemented yet.', command)
+% %                         return
+%                 end
+%                 
+%             catch Exception
+%                 handles.fail(Exception)
+%                 return
+%             end
+%             
+%             handles.state('ready')
+%         end
+%     end
 end
 
 
@@ -315,24 +315,12 @@ x = P .* beta ./ exp(alpha) + exp(beta.*t0);
 eventTime = log(x)./beta;
 eventTime(x < 0) = Inf;     % hazard integral can't reach P
 
-beta0idx = beta == 0;
+beta0idx = beta == 0; % any beta == 0
 if ~any(beta0idx)
-    return
-end
-eventTimeBeta0 = spTools_expConstant(alpha, [], t0, P);
-eventTimeBeta0 = eventTimeBeta0(:).*ones(numel(eventTime), 1);
-beta0idx = beta0idx & true(numel(eventTime), 1);
-eventTime(beta0idx) = eventTimeBeta0(beta0idx);
-
-if 0
-    % test code
-    time = (0 : 10)';
-    alpha = alpha(:,1);
-    [exp_alpha, exp_beta_t] = meshgrid(exp(alpha), exp(beta*time));
-    h = exp_alpha .* exp_beta_t;
-    mesh(double(h))
-    mesh(double(exp(alpha)))
-    mesh(double(P))
+    eventTimeBeta0 = spTools_expConstant(alpha, [], t0, P);
+    eventTimeBeta0 = eventTimeBeta0(:).*ones(numel(eventTime), 1);
+    beta0idx = beta0idx & true(numel(eventTime), 1);
+    eventTime(beta0idx) = eventTimeBeta0(beta0idx);
 end
 end
 
@@ -588,137 +576,137 @@ idx = U < F_peak;
 BCCexposure(idx) = llimit(idx) + ...
     sqrt(U(idx).*(ulimit(idx) - llimit(idx)).*(peak(idx) - llimit(idx)));
 end
-%% empiricalAge
-function ages = empiricalAge(n,gender,filename)
-%
-if strcmp(gender(1),'m')||strcmp(gender,'M')
-    col = 1;
-else
-    col = 2;
-end
-
-if ~strcmp(filename(1),'n')
-    tbl = csvread(filename,1,0);
-else
-    
-    tbl = [ 1.0000    2.2000    2.0000
-        2.0000    2.1000    2.0000
-        3.0000    2.1000    2.0000
-        4.0000    2.1000    2.0000
-        5.0000    2.1000    2.0000
-        6.0000    2.1000    2.0000
-        7.0000    2.1000    2.0000
-        8.0000    2.1000    2.0000
-        9.0000    2.2000    2.1000
-        10.0000    2.2000    2.1000
-        11.0000    2.2000    2.2000
-        12.0000    2.3000    2.2000
-        13.0000    2.3000    2.2000
-        14.0000    2.3000    2.2000
-        15.0000    2.3000    2.2000
-        16.0000    2.3000    2.2000
-        17.0000    2.4000    2.2000
-        18.0000    2.4000    2.2000
-        19.0000    2.3000    2.2000
-        20.0000    2.2000    2.1000
-        21.0000    2.2000    2.0000
-        22.0000    2.1000    1.9000
-        23.0000    2.0000    1.9000
-        24.0000    1.9000    1.8000
-        25.0000    1.9000    1.7000
-        26.0000    1.8000    1.7000
-        27.0000    1.7000    1.6000
-        28.0000    1.7000    1.6000
-        29.0000    1.6000    1.5000
-        30.0000    1.6000    1.5000
-        31.0000    1.5000    1.4000
-        32.0000    1.5000    1.4000
-        33.0000    1.4000    1.4000
-        34.0000    1.4000    1.3000
-        35.0000    1.3000    1.3000
-        36.0000    1.3000    1.3000
-        37.0000    1.3000    1.3000
-        38.0000    1.2000    1.3000
-        39.0000    1.2000    1.2000
-        40.0000    1.2000    1.2000
-        41.0000    1.2000    1.2000
-        42.0000    1.1000    1.2000
-        43.0000    1.1000    1.2000
-        44.0000    1.1000    1.2000
-        45.0000    1.1000    1.2000
-        46.0000    1.0000    1.1000
-        47.0000    1.0000    1.1000
-        48.0000    1.0000    1.1000
-        49.0000    0.9000    1.0000
-        50.0000    0.9000    1.0000
-        51.0000    0.8000    0.9000
-        52.0000    0.8000    0.9000
-        53.0000    0.8000    0.9000
-        54.0000    0.7000    0.8000
-        55.0000    0.7000    0.8000
-        56.0000    0.7000    0.8000
-        57.0000    0.6000    0.7000
-        58.0000    0.6000    0.7000
-        59.0000    0.6000    0.7000
-        60.0000    0.5000    0.6000
-        61.0000    0.5000    0.6000
-        62.0000    0.5000    0.6000
-        63.0000    0.5000    0.6000
-        64.0000    0.4000    0.5000
-        65.0000    0.4000    0.5000
-        66.0000    0.4000    0.5000
-        67.0000    0.4000    0.5000
-        68.0000    0.3000    0.4000
-        69.0000    0.3000    0.4000
-        70.0000    0.3000    0.4000
-        71.0000    0.3000    0.3000
-        72.0000    0.3000    0.3000
-        73.0000    0.2000    0.3000
-        74.0000    0.2000    0.3000
-        75.0000    0.2000    0.3000
-        76.0000    0.2000    0.2000
-        77.0000    0.2000    0.2000
-        78.0000    0.1000    0.2000
-        79.0000    0.1000    0.2000
-        80.0000    0.1000    0.2000
-        81.0000    0.1000    0.1000
-        82.0000    0.1000    0.1000
-        83.0000    0.1000    0.1000
-        84.0000    0.1000    0.1000
-        85.0000         0    0.1000
-        89.0000    0.1000    0.2000
-        94.0000         0    0.1000
-        99.0000         0         0
-        100.0000         0         0];
-end
-agesBin = tbl(:,1);
-agesBin = [0; agesBin];
-cumDistribution = cumsum(tbl(:,col+1));
-cumDistribution = [0;cumDistribution]/100;
-agesBin = agesBin(diff(cumDistribution)~=0);
-cumDistribution = cumDistribution(diff(cumDistribution)~=0);
-cumDistribution = cumDistribution/cumDistribution(length(cumDistribution));
-randAge = rand(1,n);
-ages = interp1(cumDistribution,agesBin,randAge);
-end
-%% readFertility
-function fertility = spTools_readFertility(filename)
-if strcmp(filename(1),'n')
-    fertility = [
-        2000    0.2300
-        2005    0.2200
-        2007    0.2120
-        2008    0.2070
-        2009    0.2040
-        2010    0.2020
-        2011    0.2010
-        2012    0.2010
-        2012    0.2000
-        2022    0.1950];
-else
-    fertility = csvread(filename,1,0)/10;
-end
-end
+% %% empiricalAge
+% function ages = empiricalAge(n,gender,filename)
+% %
+% if strcmp(gender(1),'m')||strcmp(gender,'M')
+%     col = 1;
+% else
+%     col = 2;
+% end
+% 
+% if ~strcmp(filename(1),'n')
+%     tbl = csvread(filename,1,0);
+% else
+%     
+%     tbl = [ 1.0000    2.2000    2.0000
+%         2.0000    2.1000    2.0000
+%         3.0000    2.1000    2.0000
+%         4.0000    2.1000    2.0000
+%         5.0000    2.1000    2.0000
+%         6.0000    2.1000    2.0000
+%         7.0000    2.1000    2.0000
+%         8.0000    2.1000    2.0000
+%         9.0000    2.2000    2.1000
+%         10.0000    2.2000    2.1000
+%         11.0000    2.2000    2.2000
+%         12.0000    2.3000    2.2000
+%         13.0000    2.3000    2.2000
+%         14.0000    2.3000    2.2000
+%         15.0000    2.3000    2.2000
+%         16.0000    2.3000    2.2000
+%         17.0000    2.4000    2.2000
+%         18.0000    2.4000    2.2000
+%         19.0000    2.3000    2.2000
+%         20.0000    2.2000    2.1000
+%         21.0000    2.2000    2.0000
+%         22.0000    2.1000    1.9000
+%         23.0000    2.0000    1.9000
+%         24.0000    1.9000    1.8000
+%         25.0000    1.9000    1.7000
+%         26.0000    1.8000    1.7000
+%         27.0000    1.7000    1.6000
+%         28.0000    1.7000    1.6000
+%         29.0000    1.6000    1.5000
+%         30.0000    1.6000    1.5000
+%         31.0000    1.5000    1.4000
+%         32.0000    1.5000    1.4000
+%         33.0000    1.4000    1.4000
+%         34.0000    1.4000    1.3000
+%         35.0000    1.3000    1.3000
+%         36.0000    1.3000    1.3000
+%         37.0000    1.3000    1.3000
+%         38.0000    1.2000    1.3000
+%         39.0000    1.2000    1.2000
+%         40.0000    1.2000    1.2000
+%         41.0000    1.2000    1.2000
+%         42.0000    1.1000    1.2000
+%         43.0000    1.1000    1.2000
+%         44.0000    1.1000    1.2000
+%         45.0000    1.1000    1.2000
+%         46.0000    1.0000    1.1000
+%         47.0000    1.0000    1.1000
+%         48.0000    1.0000    1.1000
+%         49.0000    0.9000    1.0000
+%         50.0000    0.9000    1.0000
+%         51.0000    0.8000    0.9000
+%         52.0000    0.8000    0.9000
+%         53.0000    0.8000    0.9000
+%         54.0000    0.7000    0.8000
+%         55.0000    0.7000    0.8000
+%         56.0000    0.7000    0.8000
+%         57.0000    0.6000    0.7000
+%         58.0000    0.6000    0.7000
+%         59.0000    0.6000    0.7000
+%         60.0000    0.5000    0.6000
+%         61.0000    0.5000    0.6000
+%         62.0000    0.5000    0.6000
+%         63.0000    0.5000    0.6000
+%         64.0000    0.4000    0.5000
+%         65.0000    0.4000    0.5000
+%         66.0000    0.4000    0.5000
+%         67.0000    0.4000    0.5000
+%         68.0000    0.3000    0.4000
+%         69.0000    0.3000    0.4000
+%         70.0000    0.3000    0.4000
+%         71.0000    0.3000    0.3000
+%         72.0000    0.3000    0.3000
+%         73.0000    0.2000    0.3000
+%         74.0000    0.2000    0.3000
+%         75.0000    0.2000    0.3000
+%         76.0000    0.2000    0.2000
+%         77.0000    0.2000    0.2000
+%         78.0000    0.1000    0.2000
+%         79.0000    0.1000    0.2000
+%         80.0000    0.1000    0.2000
+%         81.0000    0.1000    0.1000
+%         82.0000    0.1000    0.1000
+%         83.0000    0.1000    0.1000
+%         84.0000    0.1000    0.1000
+%         85.0000         0    0.1000
+%         89.0000    0.1000    0.2000
+%         94.0000         0    0.1000
+%         99.0000         0         0
+%         100.0000         0         0];
+% end
+% agesBin = tbl(:,1);
+% agesBin = [0; agesBin];
+% cumDistribution = cumsum(tbl(:,col+1));
+% cumDistribution = [0;cumDistribution]/100;
+% agesBin = agesBin(diff(cumDistribution)~=0);
+% cumDistribution = cumDistribution(diff(cumDistribution)~=0);
+% cumDistribution = cumDistribution/cumDistribution(length(cumDistribution));
+% randAge = rand(1,n);
+% ages = interp1(cumDistribution,agesBin,randAge);
+% end
+% %% readFertility
+% function fertility = spTools_readFertility(filename)
+% if strcmp(filename(1),'n')
+%     fertility = [
+%         2000    0.2300
+%         2005    0.2200
+%         2007    0.2120
+%         2008    0.2070
+%         2009    0.2040
+%         2010    0.2020
+%         2011    0.2010
+%         2012    0.2010
+%         2012    0.2000
+%         2022    0.1950];
+% else
+%     fertility = csvread(filename,1,0)/10;
+% end
+% end
 %% exportCSV
 function [ok, msg] = spTools_exportCSV(SDS)
 

@@ -53,9 +53,17 @@ end
             P.relation = 0;
         end
         P.baseline_factor = event.baseline_factor*ones(SDS.number_of_males, SDS.number_of_females, SDS.float);
+        
+        P.hetero_age = event.heterogeneous_age_mixing_behaviour;
+        P.hetero_age_shape = event.heterogeneous_preferred_age_Cacuchy_shape;
+        P.hetero_age_boundary = event.heterogeneous_preferred_age_Cacuchy_boundary;
+        P.malePreferredAge = cauchyrnd(SDS.number_of_males,P.preferred_age_difference,P.hetero_age_shape,P.hetero_age_boundary);
+        P.malePreferredAge = repmat(P.malePreferredAge',1,SDS.number_of_females);
+        P.femalePreferredAge = cauchyrnd(SDS.number_of_females,P.preferred_age_difference,P.hetero_age_shape,P.hetero_age_boundary);
+        P.femalePreferredAge = repmat(P.femalePreferredAge,SDS.number_of_males,1);
         P.preferred_age_difference = event.preferred_age_difference*ones(SDS.number_of_males, SDS.number_of_females, SDS.float);
         P.age_difference_factor = event.age_difference_factor*ones(SDS.number_of_males, SDS.number_of_females, SDS.float);
-        
+               
         P.alpha = -inf(SDS.number_of_males, SDS.number_of_females, SDS.float);
         P.beta = P.last_change_factor;
         P.beta = P.beta*ones(SDS.number_of_males, SDS.number_of_females, SDS.float);
@@ -138,11 +146,6 @@ end
         SDS.relations.ID(P.relation, :) = [P0.male, P0.female];
         SDS.relations.time(P.relation, P.indexStartStop) = [P0.now, Inf];
         SDS.relations.proximity(P.relation) = P0.communityDifference(P0.male,P0.female);
-        % temp
-        P0.coitalFrequency(P0.male,P0.female) = P.baseline_coital_frequency;
-        P0.contraception(P0.male,P0.female) = 0.5;
-        P0.condomUse(P0.male,P0.female) = P.basline_condom_use;
-        P0.contraception(P0.male,P0.female) = max(P0.contraception(P0.male,P0.female),P0.condomUse(P0.male,P0.female));
         
         P.enableConception(SDS, P0)          % uses P0.male; P0.female
         P.enableDissolution(P0)         % uses P0.index
@@ -184,21 +187,21 @@ end
             P.current_relations_difference_factor*P0.relationCountDifference(P0.subset).*(~P0.transactionSex(P0.subset))+ ...
             P.female_current_relations_factor*subsetRelationsCount(P0.subset).*(~P0.transactionSex(P0.subset))+...
             P.mean_age_factor*(P0.meanAge(P0.subset) - P.age_limit) + ...
-            P.age_difference_factor(P0.subset).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset)))+...
-            P.male_age_difference_variation_factor.*abs(P0.maleAge(P0.subset)-P.max_difference_male_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
+            (~P.hetero_age)*P.age_difference_factor(P0.subset).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset)))+...
+            P.hetero_age*P.male_heterogeneous_age_factor*abs(P0.ageDifference(P0.subset)-P.malePreferredAge(P0.subset))+...
+            P.hetero_age*P.female_heterogeneous_age_factor*abs(P0.ageDifference(P0.subset)-P.femalePreferredAge(P0.subset))+...
+            P.hetero_age*P.heterogeneous_preferred_age_factor*abs(P.femalePreferredAge(P0.subset)-P.malePreferredAge(P0.subset))+...
+            P.male_age_difference_variation_factor.*abs(P0.maleAge(P0.subset)-P.max_difference_male_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...           
             P.female_age_difference_variation_factor.*abs(P0.femaleAge(P0.subset)-P.max_difference_female_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
             P.transaction_sex_factor*P0.transactionSex(P0.subset) + ...
             P.community_difference_factor*abs(P0.communityDifference(P0.subset))+...
             P.MSM_factor*MSM(P0.subset);
-        
-       P.beta(P0.subset) = P.beta(P0.subset) + ...
-            P.behavioural_change_factor.*P0.relationCount(P0.subset);
-         % time when the event is enabled
+                 % time when the event is enabled
         P0.subset = P0.subset&~P0.current&~isfinite(P.eventTimes);
         P0.subset(~P0.adultMales, :) = false;
         P0.subset(:,~P0.adultFemales) = false;
         
-         if P.fix_PTR
+         if P.fix_PTR%&&P0.now>=0.1
             subset0 = P0.adult&~P0.current&~P0.subset;
             subset1 = P0.adult&~P0.current;
             % consumed randomness
@@ -260,17 +263,16 @@ end
             P.current_relations_difference_factor*P0.relationCountDifference(P0.subset) .*(~P0.transactionSex(P0.subset))+ ...
             P.female_current_relations_factor*femaleRelationMatrix(P0.subset).*(~P0.transactionSex(P0.subset))+...
             P.mean_age_factor*(P0.meanAge(P0.subset) - P.age_limit) + ...
-            P.age_difference_factor(P0.subset).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset)))+...
-            P.male_age_difference_variation_factor.*abs(P0.maleAge(P0.subset)-P.max_difference_male_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
+             (~P.hetero_age)*P.age_difference_factor(P0.subset).*abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))+...
+            P.hetero_age*P.male_heterogeneous_age_factor*abs(P0.ageDifference(P0.subset)-P.malePreferredAge(P0.subset))+...
+            P.hetero_age*P.female_heterogeneous_age_factor*abs(P0.ageDifference(P0.subset)-P.femalePreferredAge(P0.subset))+...
+            P.hetero_age*P.heterogeneous_preferred_age_factor*abs(P.femalePreferredAge(P0.subset)-P.malePreferredAge(P0.subset))+...P.male_age_difference_variation_factor.*abs(P0.maleAge(P0.subset)-P.max_difference_male_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
             P.female_age_difference_variation_factor.*abs(P0.femaleAge(P0.subset)-P.max_difference_female_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
             P.transaction_sex_factor*P0.transactionSex(P0.subset) + ...
             P.community_difference_factor*abs(P0.communityDifference(P0.subset))+...
             P.MSM_factor*MSM(P0.subset);
-
-        P.beta(P0.subset) = P.beta(P0.subset) + ...
-            P.behavioural_change_factor.*P0.relationCount(P0.subset);
         
-        if P.fix_PTR%&&P0.now>=0.5
+        if P.fix_PTR%&&P0.now>=0.1
            
             subset0 = P0.adult&~P0.current&~P0.subset;
             Pc = P.intExpLinear(P.alpha(subset0),P.beta(subset0),...
@@ -318,8 +320,10 @@ end
             P.current_relations_difference_factor*P0.relationCountDifference(P0.subset) .*(~P0.transactionSex(P0.subset))+ ...
             P.female_current_relations_factor*femaleRelationMatrix(P0.subset).*(~P0.transactionSex(P0.subset))+...
             P.mean_age_factor*(P0.meanAge(P0.subset) - P.age_limit) + ...
-            P.age_difference_factor(P0.subset).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset)))+...
-            P.male_age_difference_variation_factor.*abs(P0.maleAge(P0.subset)-P.max_difference_male_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
+            (~P.hetero_age)*P.age_difference_factor(P0.subset).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset)))+...
+            P.hetero_age*P.male_heterogeneous_age_factor*abs(P0.ageDifference(P0.subset)-P.malePreferredAge(P0.subset))+...
+            P.hetero_age*P.female_heterogeneous_age_factor*abs(P0.ageDifference(P0.subset)-P.femalePreferredAge(P0.subset))+...
+            P.hetero_age*P.heterogeneous_preferred_age_factor*abs(P.femalePreferredAge(P0.subset)-P.malePreferredAge(P0.subset))+...P.male_age_difference_variation_factor.*abs(P0.maleAge(P0.subset)-P.max_difference_male_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
             P.female_age_difference_variation_factor.*abs(P0.femaleAge(P0.subset)-P.max_difference_female_age).*(abs(P0.ageDifference(P0.subset) - P.preferred_age_difference(P0.subset))) + ...
             P.transaction_sex_factor*P0.transactionSex(P0.subset) + ...
             P.community_difference_factor*abs(P0.communityDifference(P0.subset))+...
@@ -354,19 +358,17 @@ function [props, msg] = eventFormation_properties
 
 msg = '';
 
-props.baseline_factor = log(0.1);
+props.baseline_factor = log(0.5);
 props.current_relations_factor =log(0.2);
 props.current_relations_factor_fsw =0;% log(1);
 props.male_current_relations_factor = 0;%log(1);
 props.female_current_relations_factor = log(0.9);
 props.current_relations_difference_factor =log(0.8);
-props.individual_behavioural_factor = 0;
-props.behavioural_change_factor = 0;    % The effect of relations becomes larger during BCC;
 props.mean_age_factor = -log(5)/50; %-log(hazard ration)/(age2-age1);
 props.last_change_factor =log(0.99);% log(1);         % NOTE: intHazard = Inf for d = -c !!!
 props.age_limit = 15;                 % no couple formation below this age
-props.age_difference_factor = log(0.7);
-props.preferred_age_difference = 4.5;
+props.age_difference_factor = log(0.9);
+props.preferred_age_difference = 4;
 props.max_difference_male_age = 30;
 props.male_age_difference_variation_factor = log(0.9);
 props.max_difference_female_age = 30;
@@ -375,9 +377,13 @@ props.community_difference_factor =0;% log();
 props.transaction_sex_factor =0;% log(3);
 props.MSM_factor = log(1);
 props.fix_turn_over_rate = 0;
+props.heterogeneous_age_mixing_behaviour = 1;
+props.heterogeneous_preferred_age_Cacuchy_shape = 10;
+props.heterogeneous_preferred_age_Cacuchy_boundary = 50;
+props.male_heterogeneous_age_factor = log(0.8)/2;
+props.female_heterogeneous_age_factor = log(0.8)/2;
+props.heterogeneous_preferred_age_factor = log(0.9);
 props.turn_over_rate = 0.1;
-props.baseline_coital_frequency = 2.5;
-props.basline_condom_use = 0.3;
 end
 
 

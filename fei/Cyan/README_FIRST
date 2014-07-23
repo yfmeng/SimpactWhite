@@ -1,0 +1,32 @@
+Basics
+------
+
+Run the following command line first:
+	source ./runme-first.sh
+or
+	. ./runme-first.sh
+(the . at the start of the line is a short-hand notation for 'source', and
+must not be omitted)
+
+This is to make sure that the programs will also search inside the 'libs' subdirectory
+for needed components (things that are not present on a default OS X installation)
+
+Then, to start a program, for example run:
+	./simpact-cyan-opt-debug config.txt 1
+
+To send all output to a file do
+	./simpact-cyan-opt-debug config.txt 1 >output_file 2>&1
+
+To run with a specific random number generator seed (for testing), you can run
+	MNRM_DEBUG_SEED=12345 ./simpact-cyan-opt-debug config.txt 1 
+
+Configuration tool
+------------------
+
+To create config files based on a config file with defaults and a CSV file with
+changes, use for example:
+	./configtool.py config.txt sample_input_spec.csv modified_config_
+
+To specify in the CSV file that you'd like to keep the default value for a setting,
+enter '*' at that location.
+

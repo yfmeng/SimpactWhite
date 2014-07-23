@@ -1,0 +1,177 @@
+# Note: the configuration file format is very simple, it is
+# just a set of "key = value" lines. Lines that start with a '#'
+# sign are treated as comments and are ignored. No calculations
+# can be done in the file, so instead of writing 1.0/2.0, you'd 
+# need to write 0.5 for example.
+
+# Parameters for the calculation of the survival time from the
+# set-point viral load: t_surv = C/Vsp^(-k)
+mortality.aids.survtime.C = 1325.0
+mortality.aids.survtime.k = -0.49
+
+# Duration of the acute stage. 3 months = 3/12 = 0.25
+chronicstage.acutestagetime = 0.25
+
+# Age at which a person becomes sexually active and can form
+# relationships
+debut.debutage = 15
+
+#
+# These are the parameters for the hazard in the dissolution event.
+#
+
+# ln(0.5) = -0.69314718055994530941
+dissolution.alpha_0 = -0.69314718055994530941
+dissolution.alpha_1 = 0
+dissolution.alpha_2 = 0
+dissolution.alpha_3 = 0
+dissolution.alpha_4 = 0
+dissolution.alpha_5 = 0
+# preferred age difference
+dissolution.Dp = 0
+dissolution.beta = 0
+dissolution.t_max = 200
+
+#
+# These are the parameters for the hazard in the formation event.
+#
+
+# formation.hazard.type = simple
+# # # ln(10) = 2.30258509299404568401
+# formation.hazard.simple.alpha_0 = 2.30258509299404568401
+# formation.hazard.simple.alpha_1 = 0
+# formation.hazard.simple.alpha_2 = 0
+# formation.hazard.simple.alpha_3 = 0
+# formation.hazard.simple.alpha_4 = -0.1
+# formation.hazard.simple.alpha_5 = 0
+# # These affects how the eagerness parameters are used
+# formation.hazard.simple.alpha_6 = 0
+# formation.hazard.simple.alpha_7 = 0
+# # preferred age difference
+# formation.hazard.simple.Dp = 0
+# formation.hazard.simple.beta = 0
+# formation.hazard.simple.t_max = 200
+
+formation.hazard.type = agegap
+# ln(10) = 2.30258509299404568401
+formation.hazard.agegap.alpha_0 = 2.30258509299404568401
+formation.hazard.agegap.alpha_1 = 0
+formation.hazard.agegap.alpha_2 = 0
+formation.hazard.agegap.alpha_3 = 0
+formation.hazard.agegap.alpha_4 = -0.1
+formation.hazard.agegap.alpha_5 = -1.0
+# These affects how the eagerness parameters are used
+formation.hazard.agegap.alpha_6 = 0
+formation.hazard.agegap.alpha_7 = 0
+# Translates into a scale factor (1-a8) for the male age
+formation.hazard.agegap.alpha_8 = -0.5
+formation.hazard.agegap.beta = 0
+formation.hazard.agegap.t_max = 200
+
+# Parameters for the weibull distribution from which a non-aids
+# time of death is picked.
+mortality.normal.weibull.shape = 4.0
+mortality.normal.weibull.scale = 70.0
+mortality.normal.weibull.genderdiff = 5.0
+
+# When someone dies, a new person is introduced to keep the population
+# size constant. Set the following parameter to negative to use the gender 
+# of the deceased person for the. Otherwise a random number is chosen from
+# [0,1], and if smaller than this boygirlratio, a new man is introduced in
+# the population. Otherwise, a woman is added to the population.
+#
+# This is 1.0/2.01
+mortality.base.boygirlratio = 0.49751243781094527363
+
+#
+# The hazard of transmission is h = exp(a + b * V^(-c)), where V can be
+# either the set-point viral load or the acute stage viral load. 
+# 
+# From a fit to the Lingappa et al. data:
+transmission.param.a = -1.3997
+transmission.param.b = -12.0220
+transmission.param.c = 0.1649
+
+# A person receives treatment after certain fraction of t_surv has passed.
+# The effect will be to lower the set-point viral load in such a way that
+# on a log scale the Vsp value will be multiplied by the specified fraction.
+treatment.fraction.time = 0.8
+treatment.fraction.log_viralload = 0.7
+# this can be 'yes' or 'no'
+treatment.enabled = yes
+
+# The viral load during the acute stage is based on the set point viral load:
+#    V = [ max(ln(x)/b + Vsp^(-c), maxvalue^(-c)) ]^(-1/c)
+# The b and c parameters are specified in the parameters from the transmission
+# event.
+person.vsp.toacute.x = 10.0
+person.vsp.maxvalue = 1e9
+
+# The per-person parameter for the eagerness to form a relationship is chosen
+# from a specific distribution with certain parameters. This can be configured
+# here:
+person.eagerness.dist.type = fixed
+person.eagerness.dist.fixed.value = 5.0
+
+#person.eagerness.dist.type = uniform
+#person.eagerness.dist.uniform.min = 0
+#person.eagerness.dist.uniform.max = 1
+
+#person.eagerness.dist.type = beta
+#person.eagerness.dist.beta.a = 2
+#person.eagerness.dist.beta.b = 2
+
+#person.eagerness.dist.type = gamma
+#person.eagerness.dist.gamma.a = 1
+#person.eagerness.dist.gamma.b = 1
+
+#person.agegap.man.dist.type = fixed
+#person.agegap.man.dist.fixed.value = 5.0
+
+person.agegap.man.dist.type = uniform
+person.agegap.man.dist.uniform.min = 0
+person.agegap.man.dist.uniform.max = 1
+
+#person.agegap.man.dist.type = beta
+#person.agegap.man.dist.beta.a = 2
+#person.agegap.man.dist.beta.b = 2
+
+#person.agegap.man.dist.type = gamma
+#person.agegap.man.dist.gamma.a = 1
+#person.agegap.man.dist.gamma.b = 1
+
+# The type of model to use for the Vsp value of the seeders and for inheriting
+# Vsp values. Can currently be 'logweibullwithnoise' and 'logbinormal'
+#person.vsp.model.type = logweibullwithnoise
+person.vsp.model.type = logbinormal
+
+### # For 'seeders', people marked as infected at the start of the simulation,
+### # the logarithm of set-point viral load is chosen from a weibull distribution
+### # with these parameters:
+### person.vsp.model.logweibullwithnoise.weibullscale = 5.05
+### person.vsp.model.logweibullwithnoise.weibullshape = 7.2
+### # In Vsp heritability, random noise used a sigma that's 10% of the original Vsp
+### person.vsp.model.logweibullwithnoise.fracsigma = 0.1
+### # Action to take when after adding noise upon inheriting the Vsp value, the
+### # resulting Vsp is negative: use 'noiseagain' to pick from gaussian(VspOrigin,sigma) 
+### # again, or use 'logweibull' to pick from the initial distribution again
+### person.vsp.model.logweibullwithnoise.onnegative = logweibull
+
+person.vsp.model.logbinormal.mean = 4
+person.vsp.model.logbinormal.sigma = 1
+person.vsp.model.logbinormal.rho = 0.33
+person.vsp.model.logbinormal.min = 1
+person.vsp.model.logbinormal.max = 8
+
+# These are some general parameters for the population and the simulation.
+population.nummen = 100
+population.numwomen = 100
+population.hivseedfraction = 0.2
+population.hivseedtime = 2.345
+population.simtime = 15
+population.agedistfile = sa_2003.csv
+
+logsystem.filename.events = eventlog.csv
+logsystem.filename.persons = personlog.csv
+logsystem.filename.relations = relationlog.csv
+

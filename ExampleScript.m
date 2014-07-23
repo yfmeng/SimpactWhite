@@ -6,6 +6,7 @@ addpath(genpath('/SimpactWhite'))
 %%
 
 [SDS,msg] = modelHIV('new'); 
+%%
 SDS.start_date = '01-Jan-1998';
 SDS.end_date = '31-Dec-2028';
 % (2)
@@ -13,8 +14,8 @@ n = 150;
 %set parameters of the population
 SDS.initial_number_of_females = n;
 SDS.initial_number_of_males = n;
-SDS.number_of_males = 1.5*n; 
-SDS.number_of_females = 1.5*n;
+SDS.number_of_males = 2*n; 
+SDS.number_of_females = 2*n;
 SDS.percentage_of_MSM = 1;
 SDS.number_of_relations = SDS.number_of_males*SDS.number_of_females;
 % etc...

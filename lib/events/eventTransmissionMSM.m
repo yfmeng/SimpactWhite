@@ -7,11 +7,6 @@ function varargout = eventTransmissionMSM(fcn, varargin)
 
 persistent P
 
-if nargin == 0
-    eventTransmissionMSM_test
-    return
-end
-
 switch fcn
     case 'handle'
         cmd = sprintf('@%s_%s', mfilename, varargin{1});
@@ -85,11 +80,6 @@ end
             P.algebraicSystem = solvesys(P.algebraicSystem);
             P.t(:, ii) = [P.algebraicSystem{:, 3}]';
         end
-        %toc    % ~1/200 sec/infection
-        if debugState
-            he('-debug')
-        end
-        
         % ******* Integrated Hazards for Entire Population *******
         % CD4 count at infection
         P.ageFactor =  event.CD4_distribution_at_infection{2,2};
@@ -515,17 +505,4 @@ end
 %% test
 function eventTransmissionMSM_test
 
-% global SDSG
-%
-% %SDSG = [];
-% if isempty(SDSG)
-%     [SDSG, msg] = spModel('new');
-%     [SDSG, msg] = spModel('update', SDSG);
-%     eventFormation('init', SDSG, SDSG.event(1))
-%     %SDSG.now(end + 1) = SDSG.now(end) + eventFormation('eventTime', SDSG);
-%     SDSG = eventFormationMSM('fire', SDSG);
-% end
-%
-% eventTransmissionMSM('init', SDSG, SDSG.event(3))
-% time = eventTransmissionMSM('eventTime', SDSG);
 end

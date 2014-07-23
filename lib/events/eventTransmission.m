@@ -43,40 +43,36 @@ end
         % ******* Variables & Constants *******
         P.rand = spTools('rand0toInf', SDS.number_of_males, SDS.number_of_females);
         
-        P.weeksPerYear = 52;%*(unprotected+(1-unprotected)*(1-condomEffect));
+        P.weeksPerYear = 1;%*(unprotected+(1-unprotected)*(1-condomEffect));
         
         P.ARVeffect = 1- event.infectiousness_decreased_by_ARV;
         P.probabilityChange = ones(SDS.number_of_males, SDS.number_of_females);
-        P.eventTimes = inf(SDS.number_of_males, SDS.number_of_females, SDS.float);
-
-        varWeibull = event.AIDS_mortality_distribution{2, 1};
-        P.shape = event.AIDS_mortality_distribution{2, 2};
-        P.scale = event.AIDS_mortality_distribution{2, 3};
-        P.timeDeath = [SDS.males.AIDSdeath, SDS.females.AIDSdeath];
+        P.eventTimes = inf(SDS.number_of_males, SDS.number_of_females, SDS.float);        
+        P.vl_scale = event.set_point_viral_load_distribution{2,2};
+        P.vl_shape = event.set_point_viral_load_distribution{2,3};
+        P.vl_variation = event.set_point_viral_load_distribution{2,4};        
+        P.vl_initial = wblrnd(P.vl_scale,P.vl_shape,1, SDS.number_of_males+SDS.number_of_females);
+        P.vl_initial = 10.^P.vl_initial;
+        P.survival_c = event.AIDS_survival_function{2,2};
+        P.survival_k = event.AIDS_survival_function{2,3};
+        P.timeDeath = P.survival_c./(P.vl_initial.^(-P.survival_k));
         
         %P.timeDeath = spTools('weibull', P.scale, P.shape, rand(1, infections));
         P.false = false(SDS.number_of_males, SDS.number_of_females);
         P.update = false;
-        
-        P.probability = [event.infectiousness{2:end, end}]';
-        P.loglogP =  log(-log(1-P.probability/100));
-        % random weibull
-        P.alpha = ones(SDS.number_of_males,SDS.number_of_females);%.*(-log(rand(SDS.number_of_males,SDS.number_of_females))).^(1/4);
+        P.transmission_a = event.transmission_hazard_function{2,2};
+        P.transmission_b = event.transmission_hazard_function{2,3};
+        P.transmission_c = event.transmission_hazard_function{2,4};
+        P.probability = [400 100 200]';
+        P.alpha = ones(SDS.number_of_males,SDS.number_of_females,SDS.float);%.*(-log(rand(SDS.number_of_males,SDS.number_of_females))).^(1/4);
         P.beta = 0;
         P.t = nan(4, infections, SDS.float);
         
+        varWeibull = 't';
         P.algebraicSystem = [
             event.infectiousness(2:end, 1:2)
             {varWeibull, ''}
             ];
-        debugState = false;
-%         if isme
-%             debugState = he('-debug');
-%         end
-%         if debugState
-%             he('-debug')
-%        end
-        tic
         for ii = 1 : infections
             P.algebraicSystem{4, 2} = sprintf('%g', P.timeDeath(ii));
             P.algebraicSystem = solvesys(P.algebraicSystem);
@@ -93,6 +89,7 @@ end
         %P.C0 = lognrnd(logMedian, P.CD4shape, 1, SDS.number_of_males+SDS.number_of_females);
         P.C0 = 600*ones(1,SDS.number_of_males+SDS.number_of_females);
         P.lastChange = nan(SDS.number_of_males,SDS.number_of_females, SDS.float);
+
     end
 
 %% get
@@ -138,9 +135,8 @@ end
     function [SDS, P0] = eventTransmission_fire(SDS, P0)
         
         % ******* Indices *******
-        if P0.introduce % use P0.male/P0.female
-            P0.introduce = false;
-        else
+        if ~P0.introduce % use P0.male/P0.female
+            
             P0.male = rem(P0.index - 1, SDS.number_of_males) + 1;
             P0.female = ceil(P0.index/SDS.number_of_males);
             % ******* Prepare Next *******
@@ -160,6 +156,14 @@ end
             P0.index = P0.male;
             P.eventTimes(P0.male, ~P0.serodiscordant(P0.male,:)) = Inf;
             
+            if P0.introduce
+                SDS.males.viral_load(P0.male) = P.vl_initial(P0.male);
+            else
+                vl = normrnd(SDS.females.viral_load(P0.female),P.vl_variation,1,1);
+                vl(vl<0) = P.vl_initial(P0.male);
+                SDS.males.viral_load(P0.male) = vl;                
+            end  
+            P.timeDeath(P0.male) = P.survival_c/(SDS.males.viral_load(P0.male)^(-P.survival_k));
             SDS.males.CD4Infection(P0.male) = P.C0(P0.male) + P.ageFactor*(P0.now-SDS.males.born(P0.male)) + P.genderDifference*0;
             SDS.males.CD4Death(P0.male) = SDS.males.CD4Infection(P0.male)*(1-(1-rand)^.5)/15;
             [SDS.males.CD4_500(P0.male),SDS.males.CD4_350(P0.male),SDS.males.CD4_200(P0.male)]=...
@@ -209,11 +213,21 @@ end
             SDS.females.HIV_positive(P0.female) = P0.now;
             P0.index = SDS.number_of_males + P0.female;
             P.eventTimes(~P0.serodiscordant(:,P0.female), P0.female) = Inf;
+            if P0.introduce
+                SDS.females.viral_load(P0.female) = P.vl_initial(P0.female+SDS.number_of_males);
+            else
+                vl = normrnd(SDS.males.viral_load(P0.male),P.vl_variation,1,1);
+                vl(vl<0) = P.vl_initial(P0.female+SDS.number_of_males);
+                SDS.females.viral_load(P0.female) = vl;                
+            end  
+            P.timeDeath(P0.female) = P.survival_c/(SDS.females.viral_load(P0.female)^(-P.survival_k));
+            
             SDS.females.CD4Infection(P0.female) = P.C0(P0.index) + P.ageFactor*(P0.now-SDS.females.born(P0.female)) + P.genderDifference*1;
             SDS.females.CD4Death(P0.female) = SDS.females.CD4Infection(P0.female)*(1-(1-rand)^.5)/15;
             SDS.females.AIDSdeath(P0.female) = P.timeDeath(P0.index);
             [SDS.females.CD4_500(P0.female),SDS.females.CD4_350(P0.female),SDS.females.CD4_200(P0.female)]=...
                 P.CD4Interp(SDS.females.CD4Infection(P0.female),SDS.females.CD4Death(P0.female),SDS.females.AIDSdeath(P0.female),P0.now);
+            SDS.females.AIDSdeath(P0.female) = P.timeDeath(P0.female);            
             P.enableTest(SDS,P0) %uses P0.index
             for relIdx = find(currentIdx & (SDS.relations.ID(:, SDS.index.female) == P0.female) &...
                     ismember(SDS.relations.ID(:, SDS.index.male),find(isnan(SDS.males.HIV_positive))))'
@@ -237,6 +251,7 @@ end
         
          % ******* Influence on All Events: Points *******
         P0.subset = P0.subset & P0.current;
+        P0.introduce = false;
     end
 
 
@@ -254,20 +269,21 @@ end
         condom = SDS.males.condom(P0.male); %added by Lucio
         pregnant = false;
         circumcision = ~isnan(SDS.males.circumcision(P0.male));
+        vl = SDS.males.viral_load(P0.male);
         if isnan(timeHIVpos)
             % female is HIV+
             timeHIVpos = SDS.females.HIV_positive(P0.female);
             idx = SDS.number_of_males + P0.female;
             ARV = SDS.females.ARV(P0.female);
             pregnant = P0.pregnant(P0.female);
+            vl = SDS.females.viral_load(P0.female);
             %circumcision = false;
         end
         
         if ~P.update % enabled by eventTransmission
             % determining alpha by
             % 'baseline' 'mean age' 'age difference' 'relation type' 'relations count' 'serodiscordant' 'HIV disclosure'
-            % P.alpha(P0.male, P0.female)=
-            
+            % P.alpha(P0.male, P0.female)=            
             if condom %added by Lucio 08/30
                 P.probabilityChange(P0.male,P0.female) = 1-P.infectiousness_decreased_by_condom;
             end
@@ -288,8 +304,14 @@ end
         probability = P.probability * P.probabilityChange(P0.male,P0.female);
         %loglogP =  log(-log(1- probability/100));
         loglogP = log(probability/100);
-        sexPerYear = P.weeksPerYear*P0.coitalFrequency(P0.male,P0.female)*(1-P0.condomUse(P0.male,P0.female)*P.infectiousness_decreased_by_condom);
-        P.alpha(P0.male, P0.female) = log(sexPerYear);
+        %sexPerYear = P.weeksPerYear*P0.coitalFrequency(P0.male,P0.female)*(1-P0.condomUse(P0.male,P0.female)*P.infectiousness_decreased_by_condom);
+        riskySexFactor = log(SDS.risky_sex.baseline*P.weeksPerYear)+...
+            SDS.risky_sex.female_age_factor*(P0.femaleAge(P0.male,P0.female)-15)+...
+            SDS.risky_sex.mean_age_factor*(P0.meanAge(P0.male,P0.female)-15)+...
+            SDS.risky_sex.age_difference_factor*abs(P0.ageDifference(P0.male,P0.female))+...
+            SDS.risky_sex.children_factor*P0.motheredChildren(P0.female);
+        P.alpha(P0.male, P0.female) = P.transmission_a + P.transmission_b*(vl^(-P.transmission_c))...
+            +riskySexFactor;
         a = P.alpha(P0.male, P0.female) + loglogP;       
         T = [timeHIVpos, P.t(2:end, idx)'+timeHIVpos];
         %         T = [timeHIVpos, P.t(2:end, idx)'];
@@ -300,7 +322,6 @@ end
         % temp
         P.eventTimes(P0.male, P0.female) = ...
             P.transmissionTime(P.rand(P0.male,P0.female), P0.now, Tformation, T, a, P.beta);
-        
         P.lastChange(P0.male, P0.female) = P0.now;
     end
 
@@ -336,7 +357,7 @@ end
         relationID = intersect(find(SDS.relations.ID(:,1)==P0.male),find(SDS.relations.ID(:,2)==P0.female));
         relationID = relationID(end);
         Tformation = SDS.relations.time(relationID,1);
-        a = P.alpha(P0.male, P0.female) + loglogP;
+        a = P.alpha(P0.male, P0.female) + loglogP;   
         P.rand(P0.male,P0.female) = P.rand(P0.male,P0.female) ...
             - P.consumedRand(P0.now, Tformation, T, lastChange, a, P.beta);
         
@@ -459,10 +480,12 @@ props.infectiousness = {
     't1'        'min(t, 0.25)'      .35
     't2'        't1 + (t - t1)*.9'  1.52
     };
-props.AIDS_mortality_distribution = {
-    'variable'  'Weibull shape [year]'  'Weibull scale [year]'
-    't'         2.25                    11
-    };
+props.transmission_hazard_function = {
+    'formula' 'a' 'b' 'c'
+    'exp(a+b*logVL^(-c))' 0.4 -12 0.165};
+props.AIDS_survival_function = {
+    'formula' 'c' 'k'
+    'c/viral load^(-k)' 1325 -0.49};
 props.infectiousness_decreased_by_condom = 0.8;
 props.infectiousness_decreased_by_ARV = .96;
 props.infectiousness_increased_during_conception = 1;
@@ -471,7 +494,9 @@ props.CD4_distribution_at_infection = {
     'baseline' 'age factor' 'gender difference' 'shape'
     800         5            40                          0.1
     };
-
+props.set_point_viral_load_distribution = {
+    'distribution name' 'scale' 'shape' 'heritability variation'
+    'weibull' 5.05 7.2 100};
 end
 
 
@@ -480,24 +505,3 @@ function name = eventTransmission_name
 
 name = 'HIV transmission';
 end
-
-
-%% test
-function eventTransmission_test
-
-global SDSG
-
-%SDSG = [];
-if isempty(SDSG)
-    [SDSG, msg] = spModel('new');
-    [SDSG, msg] = spModel('update', SDSG);
-    eventFormation('init', SDSG, SDSG.event(1))
-    %SDSG.now(end + 1) = SDSG.now(end) + eventFormation('eventTime', SDSG);
-    SDSG = eventFormation('fire', SDSG);
-end
-
-eventTransmission('init', SDSG, SDSG.event(3))
-time = eventTransmission('eventTime', SDSG);
-end
-
-

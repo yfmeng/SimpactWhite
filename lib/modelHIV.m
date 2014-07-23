@@ -95,9 +95,13 @@ end
         falseMatrixMSM = false(MSM,MSM);
         P0.subsetMSM = falseMatrixMSM;
          
-        SDS.males.born(1:SDS.initial_number_of_males) = -ageCast('m',SDS.initial_number_of_males);
-        SDS.females.born(1:SDS.initial_number_of_females) = -ageCast('f',SDS.initial_number_of_females); 
-
+        if ~SDS.age_struct.read_from_table
+            SDS.males.born(1:SDS.initial_number_of_males) = -ageCast('m',SDS.initial_number_of_males,SDS.age_struct.scale,SDS.age_struct.shape);
+            SDS.females.born(1:SDS.initial_number_of_females) = -ageCast('f',SDS.initial_number_of_females,SDS.age_struct.scale,SDS.age_struct.shape); 
+        else
+            SDS.males.born(1:SDS.initial_number_of_males) = ageReadTable('m',SDS.age_struct.file);
+            SDS.females.born(1:SDS.initial_number_of_females)= ageReadTable('f',SDS.age_struct.file);
+        end
         % ******* Communities TEMP!!! *******
         
         communityMale = empiricalCommunity(SDS.initial_number_of_males, SDS.number_of_community_members);
@@ -107,23 +111,22 @@ end
         
         partMales = repmat(SDS.males.partnering, SDS.number_of_females,1);
         partFemales = repmat(SDS.females.partnering',1, SDS.number_of_males);
-        partMSM = repmat(SDS.males.partnering(SDS.males.MSM),sum(SDS.males.MSM),1);
         % temp
         partneringFcn = 'mean';
         
         switch partneringFcn
             case 'min'
                 P0.partnering = min(partMales, partFemales);
-                P0.partneringMSM = min(partMSM,partMSM');
+             %   P0.partneringMSM = min(partMSM,partMSM');
             case 'max'
                 P0.partnering = max(partMales, partFemales);
-                P0.partneringMSM = max(partMSM,partMSM');
+              %  P0.partneringMSM = max(partMSM,partMSM');
             case 'mean'
                 P0.partnering = (partMales + partFemales)/2;
-                P0.partneringMSM = (partMSM+partMSM')/2;
+               % P0.partneringMSM = (partMSM+partMSM')/2;
             case 'product'
                 P0.partnering = partMales.*partFemales;
-                P0.partneringMSM = partMSM.*partMSM';
+                %P0.partneringMSM = partMSM.*partMSM';
         end
         
         
@@ -162,12 +165,16 @@ end
         SDS.females.CD4_350 = femalesNaN;
         SDS.males.CD4_200 = malesNaN;
         SDS.females.CD4_200 = femalesNaN;
-        
+        SDS.males.viral_load = malesNaN;
+        SDS.females.viral_load = femalesNaN;
         SDS.males.AIDSdeath = malesNaN; %since infection
         SDS.females.AIDSdeath = femalesNaN;
         SDS.person_years_aquired = 0;
-        SDS.males.behaviour_factor = rand(1, SDS.number_of_males);
-        SDS.females.behaviour_factor = rand(1, SDS.number_of_females);
+        
+        %%%tempo heterogeneous individual behaviour factor
+        % shape = 5, scale = 1
+        SDS.males.behaviour_factor = wblrnd(1,5, 1,SDS.number_of_males);
+        SDS.females.behaviour_factor = wblrnd(1,5, 1,SDS.number_of_females);
         
         SDS.males.intervened = malesNaN;
         SDS.females.intervened = malesNaN;
@@ -218,8 +225,6 @@ end
         P0.relationCount = ...
             repmat(P0.maleRelationCount, 1, SDS.number_of_females) + ...
             repmat(P0.femaleRelationCount, SDS.number_of_males, 1);
-        %P0.maleRelationCountmat = repmat(P0.maleRelationCount, 1, SDS.number_of_females);
-        %P0.femaleRelationCountmat = repmat(P0.femaleRelationCount, SDS.number_of_males, 1);
         P0.relationCountDifference = abs(...
             repmat(P0.maleRelationCount, 1, SDS.number_of_females) - ...
             repmat(P0.femaleRelationCount, SDS.number_of_males, 1));
@@ -235,10 +240,7 @@ end
         
         P0.motheredChildren = zeros(1,SDS.number_of_females);
         P0.lastChild = femalesNaN;
-        P0.contraception = falseMatrix;
-        P0.comdonUse = falseMatrix;
-        P0.coitalFrequency = falseMatrix;
-        
+        P0.contraception = falseMatrix;        
         P0.maleAge = -repmat(SDS.males.born(:), 1, SDS.number_of_females);
         P0.femaleAge = -repmat(SDS.females.born(:)', SDS.number_of_males, 1);
         P0.maleAge(P0.maleAge<15) = NaN;
@@ -261,11 +263,6 @@ end
         P0.ageDifference = P0.maleAge - P0.femaleAge;
         P0.intervened = falseMatrix;
         P0.communityDifference = cast(P0.maleCommunity - P0.femaleCommunity, SDS.float);
-          
-%         P0.current_relations_factorMax = max(P0.malecurrent_relations_factor,P0.femalecurrent_relations_factor);%
-%         P0.current_relations_factorMin = min(P0.malecurrent_relations_factor,P0.femalecurrent_relations_factor);%
-%         P0.current_relations_factorMean = (P0.malecurrent_relations_factor+P0.femalecurrent_relations_factor)./2;%
-%         
         P0.current = falseMatrix;
         P0.currentMSM = falseMatrixMSM;
         
@@ -473,11 +470,11 @@ SDS.end_date = '31-Dec-2018';
 SDS.number_of_communities = 2;
 
 SDS.iteration_limit = 9000000;
-SDS.number_of_males = 5;
-SDS.number_of_females = 5;
-SDS.initial_number_of_males = 5;
-SDS.initial_number_of_females = 5;
-SDS.percentage_of_MSM = 50;
+SDS.number_of_males = 180;
+SDS.number_of_females = 180;
+SDS.initial_number_of_males = 100;
+SDS.initial_number_of_females = 100;
+SDS.percentage_of_MSM = 0;
 SDS.number_of_community_members = 500;
 SDS.number_of_relations = SDS.number_of_males*SDS.number_of_females;
 SDS.number_of_tests =  (SDS.number_of_males+SDS.number_of_females);
@@ -506,16 +503,23 @@ SDS.comments = {
     [item, 'condom duration  duration of condom use (can be 0)']
     [item, 'conception       time of conception [date]']
     };
-
-
 % ******* Index Keys *******
 SDS.index.male   = logical([1, 0]);
 SDS.index.female = logical([0, 1]);
 SDS.index.start  = logical([1, 0, 0]);
 SDS.index.stop   = logical([0, 1, 0]);
 SDS.index.condom = logical([0, 0, 1]);
-
-
+% ******* Global sexual frequency variables *******
+SDS.risky_sex.baseline = 1;
+SDS.risky_sex.female_age_factor = log(1);
+SDS.risky_sex.mean_age_factor = log(1);
+SDS.risky_sex.age_difference_factor = log(1);
+SDS.risky_sex.children_factor = log(1);
+% ******* Age structure variables ********
+SDS.age_struct.scale = 30;
+SDS.age_struct.shape = 3;
+SDS.age_struct.read_from_table = false;
+SDS.age_struct.file = '';
 % ******* Population *******
 commonPrp = struct('father',[], 'mother',[], ...
     'born',[], 'deceased',[], ...
@@ -523,14 +527,18 @@ commonPrp = struct('father',[], 'mother',[], ...
     'HIV_positive',[], ...              % time of HIV transmission [date]
     'AIDS_death',[], ...                % death by AIDS [boolean]
     'HIV_test',[], ...                  % time of HIV-test [date]
-    'ARV_start',[], 'ARV_stop',[], ...  % antiretroviral treatment [date]
+    'ARV_start',[], 'ARV_stop',[],'ARV_eligible',[], ...  % antiretroviral treatment [date]
+    'CD4Infection',[],'CD4ARV',[],'CD4Death',[],...
+    'CD4_500',[],'CD4_350',[],'CD4_200',[],'viral_load',[],...
+    'intervened',[],...
     'community',[], ...                 % currently integer
-    'partnering', []);                  % sexual activity scale [0...1]
+    'partnering', [],'behaviour_factor',[]);  % sexual activity scale [0...1]
 SDS.males = mergeStruct(commonPrp, struct(...
     'circumcision',[], ...              % time of circumcision [date]
     'condom',[]));             % duration of condom use (can be 0)
 SDS.females = mergeStruct(commonPrp, struct(...
-    'conception',[]));                  % time conception [date]
+    'conception',[],...
+    'sex_worker',[]));                  % time conception [date]
 
 
 % ******* Relations *******
@@ -553,52 +561,6 @@ for thisFile = dir(fullfile(folder , 'event*.m'))'
     %SDS.(thisField).comments = {''};
 end
 end
-
-
-%% add
-function [SDS, msg] = modelHIV_add(objectType, Schar, handles)
-
-import javax.swing.ImageIcon
-import javax.swing.JOptionPane
-
-msg = '';
-SDS = handles.data();
-%WHY??? subS = evalstruct(SDS, Schar);
-subS = eval(Schar);
-
-Prefs = handles.prefs('retrieve');
-object = char(JOptionPane.showInputDialog(handles.frame, ...
-    sprintf('%s File:', capitalise(objectType)), Prefs.appName, ...
-    JOptionPane.QUESTION_MESSAGE, ImageIcon(which(Prefs.appIcon)), [], objectType));
-if isempty(object)
-    msg = 'Cancelled by user';
-    return
-end
-
-% objectField = genvarname(strrep(object, ' ', '_'));
-% if isfield(subS, objectField)
-%     msg = sprintf('The %s ''%s'' already exists', objectType, object);
-%     return
-% end
-if isempty(which(object))
-    msg = sprintf('Warning: can''t find %s file ''%s.m''', objectType, object);
-    return
-end
-
-switch objectType
-    case 'event'
-        objectField = str2field(feval(object, 'name'));
-        [subS.(objectField), msg] = modelHIV_eventProps(modelHIV_event(object));
-        if ~isempty(msg)
-            return
-        end
-        eval(sprintf('%s = subS;', Schar))
-        
-    otherwise
-        error '.'
-end
-end
-
 
 %% event
 function event = modelHIV_event(eventFile)
@@ -668,263 +630,6 @@ if ~isfield(subS, 'comments')
     subS.comments = {propMsg};
 end
 end
-
-
-%% popupMenu
-function modelHIV_popupMenu(Schar, SDS, popupMenu, handles)
-
-import javax.swing.JMenu
-import javax.swing.JMenuItem
-
-if isempty(Schar)
-    return
-end
-
-%WHY??? subS = evalstruct(SDS, Schar);
-subS = eval(Schar);
-isObject = isfield(subS, 'object_type');
-
-if strcmp(Schar, 'SDS')% || isObject
-    menuItem = JMenuItem('Add New Event');
-    jset(menuItem, 'ActionPerformedCallback', {@modelHIV_popupMenu_add, 'event'});
-    popupMenu.add(menuItem);
-end
-
-% ******* Remove Objects from Data Structure *******
-if ~isObject
-    return
-end
-
-enumC = regexp(Schar, '\.(\w+)\(?(\d*)\)?', 'tokens');
-name = sprintf('%s: <i>%s</i>', capitalise(subS.object_type), field2str(enumC{end}{1}));
-
-% if strcmp(subS.object_type, 'event') && ~isempty(subS.event_file)
-%     popupMenu.addSeparator()
-%
-%     %menuItem = JMenuItem('Initialise Event');
-%     menuItem = JMenuItem(sprintf('<html>Add Properties: <i>%s</i></html>', subS.event_file));
-%     %doesnt work menuItem.setEnabled(~isempty(subS.event_file))
-%     jset(menuItem, 'ActionPerformedCallback', @modelHIV_popupMenu_eventProps);
-%     popupMenu.add(menuItem);
-% end
-% popupMenu.addSeparator()
-
-if ~isempty(subS.event_file)
-    menuItem = JMenuItem(sprintf('<html>Open %s</html>', name));
-    jset(menuItem, 'ActionPerformedCallback', @modelHIV_popupMenu_open);
-    popupMenu.add(menuItem);
-    
-    popupMenu.addSeparator()
-end
-
-menuItem = JMenuItem(sprintf('<html>Remove %s</html>', name));
-jset(menuItem, 'ActionPerformedCallback', @modelHIV_popupMenu_removeField);
-popupMenu.add(menuItem);
-
-
-%% popupMenu_add
-    function modelHIV_popupMenu_add(~, ~, objectType)
-        
-        %handles.msg('Adding %s...', objectType)
-        [SDS, msg] = modelHIV_add(objectType, Schar, handles);
-        
-        if ~isempty(msg)
-            handles.fail(msg)
-            return
-        end
-        
-        handles.update(SDS)
-        %handles.msg(' ok\n')
-    end
-
-
-%% popupMenu_eventProps CODE DUPL!!!
-    function modelHIV_popupMenu_eventProps(~, ~)
-        
-        [subS, msg] = modelHIV_eventProps(subS);
-        if ~isempty(msg)
-            handles.fail(msg)
-            return
-        end
-        eval([Schar, ' = subS;'])
-        handles.update(SDS, '-restore')
-    end
-
-
-%% popupMenu_open
-    function modelHIV_popupMenu_open(~, ~)
-        
-        file = which(subS.event_file);
-        [ok, msg] = backup(file);
-        if ok
-            handles.msg('Backup: %s\n', msg)
-        else
-            handles.fail(msg)
-        end
-        open(file)
-    end
-
-
-%% popupMenu_removeField
-    function modelHIV_popupMenu_removeField(~, ~)
-        
-        import javax.swing.ImageIcon
-        import javax.swing.JOptionPane
-        
-        remC = regexp(Schar, '(.+)\.(.+)', 'tokens', 'once');
-        action = sprintf('<html>Remove %s <i>%s</i>?</html>', ...
-            subS.object_type, field2str(remC{2}));
-        %handles.msg([action, '...'])
-        
-        Prefs = handles.prefs('retrieve');
-        choice = JOptionPane.showConfirmDialog(handles.frame, ...
-            [action, '?'], Prefs.appName, JOptionPane.OK_CANCEL_OPTION, ...
-            JOptionPane.QUESTION_MESSAGE, ImageIcon(which(Prefs.appIcon)));
-        
-        if choice ~= JOptionPane.OK_OPTION
-            %handles.fail('Cancelled by user')
-            return
-        end
-        
-        subS = rmfield(eval(remC{1}), remC{2});
-        eval([remC{1}, ' = subS;'])
-        
-        handles.update(SDS)
-        %handles.msg(' ok\n')
-    end
-end
-
-
-%% menu
-function modelMenu = modelHIV_menu(handlesFcn)
-
-import java.awt.event.ActionEvent
-import java.awt.event.KeyEvent
-import javax.swing.JMenu
-import javax.swing.JMenuItem
-import javax.swing.KeyStroke
-
-handles = handlesFcn();
-
-modelMenu = JMenu('Model');
-modelMenu.setMnemonic(KeyEvent.VK_M)
-
-menuItem = JMenuItem('Start Simulation', KeyEvent.VK_S);
-menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK))
-menuItem.setToolTipText('Start simulation')
-jset(menuItem, 'ActionPerformedCallback', {@modelHIV_callback, handles})
-modelMenu.add(menuItem);
-
-if strcmp(getenv('USERNAME'), 'ralph')
-    menuItem = JMenuItem('Pre Process');
-    jset(menuItem, 'ActionPerformedCallback', {@modelHIV_callback, handles})
-    modelMenu.add(menuItem);
-    
-    menuItem = JMenuItem('Post Process');
-    jset(menuItem, 'ActionPerformedCallback', {@modelHIV_callback, handles})
-    modelMenu.add(menuItem);
-end
-
-modelMenu.addSeparator()
-
-menuItem = JMenuItem('Open Project Folder', KeyEvent.VK_P);
-menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK))
-menuItem.setDisplayedMnemonicIndex(5)
-menuItem.setToolTipText('Open project folder in Windows Explorer')
-jset(menuItem, 'ActionPerformedCallback', {@modelHIV_callback, handles})
-modelMenu.add(menuItem);
-
-menuItem = JMenuItem('Open Data File', KeyEvent.VK_D);
-menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK))
-menuItem.setToolTipText('Open data script -if available- in editor')
-jset(menuItem, 'ActionPerformedCallback', {@modelHIV_callback, handles})
-modelMenu.add(menuItem);
-
-modelMenu.addSeparator()
-
-% menuItem = JMenuItem('Add Event', KeyEvent.VK_A);
-% menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.CTRL_MASK))
-% menuItem.setToolTipText('Add an event to this model')
-% jset(menuItem, 'ActionPerformedCallback', {@modelHIV_callback, handles})
-% modelMenu.add(menuItem);
-% modelMenu.addSeparator()
-
-menuItem = JMenuItem('To MATLAB Workspace', KeyEvent.VK_W);
-menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK))
-menuItem.setToolTipText('Assign SDS data structure to MATLAB workspace (Command Window)')
-jset(menuItem, 'ActionPerformedCallback', {@modelHIV_callback, handles})
-modelMenu.add(menuItem);
-end
-
-
-%% callback
-function modelHIV_callback(~, actionEvent, handles)
-
-SDS = handles.data();
-handles.state('busy')
-
-try
-    action = get(actionEvent, 'ActionCommand');
-    
-    switch action
-        case 'Pre Process'
-            handles.msg('Pre processing... ')
-            [SDS, msg] = modelHIV('preprocess', SDS);    % modelHIV_preprocess
-            if ~isempty(msg)
-                handles.fail(msg)
-                return
-            end
-            handles.update(SDS, '-restore')
-            handles.msg(' ok\n')
-            
-        case 'Post Process'
-            handles.msg('Post processing... ')
-            [SDS, msg] = modelHIV_postprocess(SDS);
-            if ~isempty(msg)
-                handles.fail(msg)
-                return
-            end
-            handles.update(SDS, '-restore')
-            handles.msg(' ok\n')
-            
-        case 'Start Simulation'
-            spRun('start', handles);
-            
-        case 'Open Project Folder'
-            handles.msg('Opening project folder...')
-            winopen(jproject('folder'))
-            handles.msg(' ok\n')
-            
-        case 'Open Data File'
-            handles.msg('Opening data file...')
-            [ok, msg] = spTools('edit', modelHIV_dataFile(SDS));
-            if ok
-                handles.msg(' ok\n')
-            else
-                handles.fail(msg)
-            end
-            
-        case 'Add Event'
-            debugMsg 'Add Event'
-            
-        case 'To MATLAB Workspace'
-            handles.msg('Assigning data structure to MATLAB workspace...')
-            base(SDS)
-            handles.msg(' ok\n')
-            
-        otherwise
-            handles.fail('Warning: unknown action ''%s''\n', action)
-            return
-    end
-    
-catch Exception
-    handles.fail(Exception)
-    return
-end
-
-handles.state('ready')
-end
-
 
 %% dataFile
 function dataFile = modelHIV_dataFile(SDS)
